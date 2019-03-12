@@ -2,6 +2,22 @@
 
 My collection of scripts and tutorials to multiboot Chrome OS with other operating systems
 
+### Index
+- [Multiboot guide](#multiboot-guide)
+  * [Prerequisites](#prerequisites)
+  * [Process](#process)
+    - [Creating partitions](#creating-partitions)
+    - [Converting Chromium OS to Chrome OS](#converting-chromium-os-to-chrome-os)
+    - [Installing on HDD](#installing-on-hdd)
+  * [Post-installation](#post-installation)
+    - [Fix GRUB (the bootloader)](#fix-grub-the-bootloader)
+    - [Fix partition table info](#fix-partition-table-info) [Incomplete]
+    - [Enable tap to click (optional and for Synaptics Touchpad only)](#enable-tap-to-click-optional-and-for-synaptics-touchpad-only)
+- [Updating Chrome OS](#updating-chrome-os) [Incomplete]
+- [Some important Chrome flags](#some-important-chrome-flags)
+- [Mounting internal partitions](#mounting-internal-partitions) [Incomplete]
+- [References](#references)
+
 ## Multiboot guide
 
 ### Prerequisites
@@ -145,6 +161,14 @@ Now, you can use `vim` editor to edit the file.
 sudo vim /etc/chrome_dev.conf
 ```
 
+### Mounting internal partitions
+
+As you may have noticed, internal partitions are not mounted by default (since Chrome OS is never meant to be used this way).
+So, in order to mount the internal partitions, you'll need to edit `/etc/fstab` **_after_ you have created an user account in the Chrome OS.** The idea is to mount them inside the **~/Downloads** folder so that you can access these partitions from there.
+
+TODO
+
 ### References
 - https://github.com/imperador/chromefy
 - https://docs.google.com/document/d/1uBU4IObDI8IFhSjeCMvKw46O4vKCnfeZTGF7Jx8Brno/edit
+- https://wiki.debian.org/fstab
