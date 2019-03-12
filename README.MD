@@ -138,7 +138,8 @@ Since `Chrome://flags` results in a blank page on Chrome OS, here I've listed so
 --enable-physical-keyboard-autocorrect
 --enable-quic
 --enable-smooth-scrolling
---enable-wifi-credential-sync --enable-features=Pepper3DImageChromium,PointerEvent,MachineLearningService,ChromeOSAssistant,EnableBackgroundBlur,Crostini,ExperimentalCrostiniUI,ArcEnableUnifiedAudioFocus,ArcVpn,ArcBootCompletedBroadcast,ChromeOSAccountManager,EnableNewStyleLauncher,NewStyleNotifications,ExperimentalUi,ParallelDownloading,UseModernMediaControls,CrostiniUsbSupport,EnableAppShortcutSearch,EnableBackgroundBlur,EnablePlayStoreAppSearch,EnableHomeLauncher,EnableSettingsShortcutSearch,EnableAppsGridGapFeature,
+--enable-wifi-credential-sync
+--enable-features=Pepper3DImageChromium,PointerEvent,MachineLearningService,ChromeOSAssistant,EnableBackgroundBlur,Crostini,ExperimentalCrostiniUI,ArcEnableUnifiedAudioFocus,ArcVpn,ArcBootCompletedBroadcast,ChromeOSAccountManager,EnableNewStyleLauncher,NewStyleNotifications,ExperimentalUi,ParallelDownloading,UseModernMediaControls,CrostiniUsbSupport,EnableAppShortcutSearch,EnableBackgroundBlur,EnablePlayStoreAppSearch,EnableHomeLauncher,EnableSettingsShortcutSearch,EnableAppsGridGapFeature,
 --show-saved-copy
 --enable-virtual-keyboard
 --enable-lock-screen-apps
@@ -166,7 +167,12 @@ sudo vim /etc/chrome_dev.conf
 As you may have noticed, internal partitions are not mounted by default (since Chrome OS is never meant to be used this way).
 So, in order to mount the internal partitions, you'll need to edit `/etc/fstab` **_after_ you have created an user account in the Chrome OS.** The idea is to mount them inside the **~/Downloads** folder so that you can access these partitions from there.
 
+By default, `/etc/fstab` is not executed (that's good, because we need to mount the partitions after the user has logged in). But to do that we need to execute `mount -a -T /etc/fstab` after the user has logged in. This can be achieved by adding (or editing an existing) _configuration_ file in the `/etc/init` directory.
+
+#### Editing `/etc/fstab`
 TODO
+
+#### Mounting partitions
 
 ### References
 - https://github.com/imperador/chromefy
