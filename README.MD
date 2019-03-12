@@ -21,13 +21,12 @@ My collection of scripts and tutorials to multiboot Chrome OS with other operati
 ## Multiboot guide
 
 ### Prerequisites
-1. A pendrive with 16 GB space (10 GB is enough)
-2. A Linux distro e.g. Ubuntu, Mint, etc. (may need installing since the files to be downloaded need a lot of space)
-3. [chromefy.h](https://github.com/imperador/chromefy/releases)
-4. @arnoldthebat's [Chromium OS Special build](https://chromium.arnoldthebat.co.uk/index.php?dir=special&order=modified&sort=desc)
-5. [Caroline & Eve recovery files](https://cros-updates-serving.appspot.com) (for Intel) matching the @arnoldthebat's build
+1. A Linux distro e.g. Ubuntu, Mint, etc. (may need installing since the files to be downloaded need a lot of space)
+2. [chromefy.h](https://github.com/imperador/chromefy/releases)
+3. @arnoldthebat's [Chromium OS Special build](https://chromium.arnoldthebat.co.uk/index.php?dir=special&order=modified&sort=desc)
+4. [Caroline & Eve recovery files](https://cros-updates-serving.appspot.com) (for Intel) matching the @arnoldthebat's build
   (check [here](https://www.chromium.org/chromium-os/developer-information-for-chrome-os-devices) for more info)
-6. [install_chrome.h](https://raw.githubusercontent.com/MuntashirAkon/Chrome-OS-Multiboot/master/install_chromium.sh)
+5. [install_chrome.h](https://raw.githubusercontent.com/MuntashirAkon/Chrome-OS-Multiboot/master/install_chromium.sh)
   
 ### Process
 
@@ -64,20 +63,12 @@ You'll need to create 3 partitions in GPT mode:
 
 #### Installing on HDD
 
-[There is a better way, but currently this one is the one that I followed]
-
-- Insert pendrive and find the device id using **Disks** or similar program (suppose, the device id is `sdb`)
-- Run the following command to install Chrome OS on your pendrive: (**All data in the pendrive will be erased!)
+- Run the following command to install chromium on HDD:
   ```bash
-  cd ~/Downloads/ChromeOS/ && sudo dd if=chromiumos_image.img of=/dev/sdb bs=4M
+  cd ~/Downloads/ChromeOS/ && sudo install_chromium.sh chromiumos_image.img sda4 sda5 sda6
   ```
-  Replace `sdb` with the device id of your pendrive
-- Run the following command to install chromium on HDD
-  ```bash
-  cd ~/Downloads/ChromeOS/ && sudo install_chromium.sh sdb sda4 sda5 sda6
-  ```
-  Replace `sdb` with the device id of your pendrive, `sda4` with **EFI-SYSTEM** partition's id,
-  `sda5` with **ROOT-A** partition's id and `sda6` with **STATE** partition's id
+  Replace `chromiumos_image.img` with the chromium image (should be `chromiumos_image.img`), `sda4` with **EFI-SYSTEM**
+  partition's id, `sda5` with **ROOT-A** partition's id and `sda6` with **STATE** partition's id.
 
 #### Post-installation
 
