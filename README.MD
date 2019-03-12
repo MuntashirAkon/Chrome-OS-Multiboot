@@ -95,9 +95,8 @@ sudo gedit ~/localroota/usr/sbin/write_gpt.sh
 
 TODO
 
-##### Fix tap to click (optional and for Synaptics Touchpad only)
-/etc/gesture/40-touchpad-cmt.conf
-To fix partition table info, open `~/localroota/etc/gesture/40-touchpad-cmt.conf` with your favourite editor with admin privilege, e.g.:
+##### Enable tap to click (optional and for Synaptics Touchpad only)
+To enable tap to click, open `~/localroota/etc/gesture/40-touchpad-cmt.conf` with your favourite editor with admin privilege, e.g.:
 ```bash
 sudo gedit ~/localroota/etc/gesture/40-touchpad-cmt.conf
 ```
@@ -112,6 +111,39 @@ Now you can safely boot into the newly installed OS.
 
 ### Updating Chrome OS
 TODO
+
+### Some important Chrome flags
+Since `Chrome://flags` results in a blank page on Chrome OS, here I've listed some important Chrome flags for better user experience.
+```
+--enable-fast-unload
+--enable-google-branded-context-menu
+--enable-offline-auto-reload-visible-only
+--enable-offline-auto-reload
+--enable-physical-keyboard-autocorrect
+--enable-quic
+--enable-smooth-scrolling
+--enable-wifi-credential-sync --enable-features=Pepper3DImageChromium,PointerEvent,MachineLearningService,ChromeOSAssistant,EnableBackgroundBlur,Crostini,ExperimentalCrostiniUI,ArcEnableUnifiedAudioFocus,ArcVpn,ArcBootCompletedBroadcast,ChromeOSAccountManager,EnableNewStyleLauncher,NewStyleNotifications,ExperimentalUi,ParallelDownloading,UseModernMediaControls,CrostiniUsbSupport,EnableAppShortcutSearch,EnableBackgroundBlur,EnablePlayStoreAppSearch,EnableHomeLauncher,EnableSettingsShortcutSearch,EnableAppsGridGapFeature,
+--show-saved-copy
+--enable-virtual-keyboard
+--enable-lock-screen-apps
+```
+To add these flags, open `~/localroota/etc/chrome_dev.conf` with your favourite editor with admin privilege, e.g.:
+```bash
+sudo gedit ~/localroota/etc/chrome_dev.conf
+```
+Now, add the flags at the bottom of the file.
+
+You can also test them _inside_ Chrome OS, to do that run the following commands on CrOS terminal:
+```bash
+sudo su
+cp /etc/chrome_dev.conf /usr/local/
+mount --bind /usr/local/chrome_dev.conf /etc/chrome_dev.conf
+exit
+```
+Now, you can use `vim` editor to edit the file.
+```bash
+sudo vim /etc/chrome_dev.conf
+```
 
 ### References
 - https://github.com/imperador/chromefy
