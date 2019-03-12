@@ -223,6 +223,8 @@ On your linux distro:
 
 Now, you can safely reboot. This method should work on multiple user environment as well.
 
+**NOTE:** Mounted partitions don't show up on Android, further study needed. 
+
 ### References
 1. https://github.com/imperador/chromefy
 2. https://docs.google.com/document/d/1uBU4IObDI8IFhSjeCMvKw46O4vKCnfeZTGF7Jx8Brno/edit
