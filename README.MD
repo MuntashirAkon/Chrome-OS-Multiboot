@@ -73,10 +73,13 @@ You'll need to create 3 partitions in GPT mode:
 #### Post-installation
 
 ##### Fix GRUB (the bootloader)
+
+[GRUB fix is applied automatically when you ran `install_chromium.sh`, follow this part only if you get an error]
+
 In order to boot into the installed OS, the bootloader is needed to be configured properly. The boot parition is **ROOT-A**,
 hence we need the partition UUID of it. To get the partition UUID, run: (assuming `sda5` to be the **ROOT-A** partition)
 ```bash
-sudo sfdisk --part-uuid "/dev/sda" 5
+sudo /sbin/blkid -s PARTUUID -o value /dev/sda5
 ```
 Note the above partition UUID.
 
