@@ -119,10 +119,11 @@ Find `CMT for Synaptics Touchpad` and add these lines in a new line inside this 
 
 Now you can safely boot into the newly installed OS.
 
-### Updating Chrome OS
+## Updating Chrome OS
 TODO
 
-### Some important Chrome flags
+## Some important Chrome flags
+
 Since `Chrome://flags` results in a blank page on Chrome OS, here I've listed some important Chrome flags for better user experience.
 ```
 --enable-fast-unload
@@ -156,7 +157,9 @@ Now, you can use `vim` editor to edit the file.
 sudo vim /etc/chrome_dev.conf
 ```
 
-### Mounting internal partitions
+**NOTE:** The latter method is for testing purposes only as the binding will be reset upon a restart.
+
+## Mounting internal partitions
 
 (Except where noted, you can follow this guide entirely on Chrome OS)
 
@@ -219,7 +222,7 @@ Now, you can safely reboot. This method should work on multiple user environment
 
 **NOTE:** Mounted partitions don't show up on Android, further study needed. 
 
-### References
+## References
 1. https://github.com/imperador/chromefy
 2. https://docs.google.com/document/d/1uBU4IObDI8IFhSjeCMvKw46O4vKCnfeZTGF7Jx8Brno/edit
 3. https://wiki.debian.org/fstab
