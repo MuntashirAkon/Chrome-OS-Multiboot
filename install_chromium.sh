@@ -74,6 +74,7 @@ function main {
     if [ $? -eq 0 ]; then
         echo "Done."
     else
+        echo
         echo "Failed copying files, may contain corrupted files."
         exit 1
     fi
@@ -90,6 +91,7 @@ function main {
     if [ $? -eq 0 ]; then
         echo "Done."
     else
+        echo
         echo "Failed copying files, may contain corrupted files."
         exit 1
     fi
@@ -106,18 +108,34 @@ function main {
     if [ $? -eq 0 ]; then
         echo "Done."
     else
+        echo
         echo "Failed copying files, may contain corrupted files."
         exit 1
     fi
-    echo "Fixing GRUB..."
+
+    # Post installation
+    echo -n "Fixing GRUB..."
     local hdd_uuid=`/sbin/blkid -s PARTUUID -o value "${hdd_root_a_part}"`
     local old_uuid=`cat "${local_efi_dir}/efi/boot/grub.cfg" | grep -m 1 "PARTUUID=" | awk '{print $15}' | cut -d'=' -f3`
     sed -i "s/${old_uuid}/${hdd_uuid}/" "${local_efi_dir}/efi/boot/grub.cfg"
     if [ $? -eq 0 ]; then
         echo "Done."
     else
+        echo
         echo "Failed fixing GRUB, please try fixing it manually."
-        exit 1
+        # exit 1 # This isn't a critical error
+    fi
+    
+    echo -n "Fixing touchpad..."
+    local tp_line=`grep -Fn "06cb:*" "${local_root_a}/etc/gesture/40-touchpad-cmt.conf" | sed 's/^\([0-9]\+\):.*$/\1/'`
+    tp_line=$((tp_line+3)) # Add at line#21
+    sed -i "${tp_line}a\    # Enable tap to click\n    Option          \"libinput Tapping Enabled\" \"1\"\n    Option          \"Tap Minimum Pressure\" \"0.1\"\n" "${local_root_a}/etc/gesture/40-touchpad-cmt.conf"
+    if [ $? -eq 0 ]; then
+        echo "Done."
+    else
+        echo
+        echo "Failed fixing touchpad, please try fixing it manually."
+        # exit 1 # This isn't a critical error
     fi
     echo
     echo "Now edit ${local_root_a}/usr/sbin/write_gpt.sh to keep only the required partitions."
