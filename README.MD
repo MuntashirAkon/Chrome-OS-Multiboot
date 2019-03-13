@@ -76,6 +76,9 @@ You'll need to create 3 partitions in GPT mode:
 
 [GRUB fix is applied automatically when you ran `install_chromium.sh`, follow this part only if you get an error]
 
+<details>
+  <summary>View</summary>
+
 In order to boot into the installed OS, the bootloader is needed to be configured properly. The boot parition is **ROOT-A**,
 hence we need the partition UUID of it. To get the partition UUID, run: (assuming `sda5` to be the **ROOT-A** partition)
 ```bash
@@ -96,6 +99,7 @@ menuentry "Chrome OS" {
 }
 ```
 Now, replace `<partition-uuid>` with the partition UUID that you've noted earlier.
+</details>
 
 ##### Fix partition table info
 To fix partition table info, open `~/localroota/usr/sbin/write_gpt.sh` with your favourite editor with admin privilege, e.g.:
@@ -106,6 +110,12 @@ sudo gedit ~/localroota/usr/sbin/write_gpt.sh
 TODO
 
 ##### Enable tap to click (optional and for Synaptics Touchpad only)
+
+_[Implemented in the script file, follow this part only if you get an error]_
+
+<details>
+  <summary>View</summary>
+
 To enable tap to click, open `~/localroota/etc/gesture/40-touchpad-cmt.conf` with your favourite editor with admin privilege, e.g.:
 ```bash
 sudo gedit ~/localroota/etc/gesture/40-touchpad-cmt.conf
@@ -116,6 +126,8 @@ Find `CMT for Synaptics Touchpad` and add these lines in a new line inside this 
     Option          "libinput Tapping Enabled" "1"
     Option          "Tap Minimum Pressure" "0.1"
 ```
+
+</details>
 
 Now you can safely boot into the newly installed OS.
 
