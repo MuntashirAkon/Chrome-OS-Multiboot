@@ -11,16 +11,18 @@ fi
 
 #
 # Mount the partition if not already
-# $1: Partition name e.g. sda11
+# $1: Partition name e.g. /dev/sda11
 # $2: Mount point
 function mountIfNotAlready {
-    if [ -e "$2" ]; then
-        umount "$2" 2> /dev/null
-        umount "/dev/$1" 2> /dev/null
-        rm -rf "$2"
+    local part_name="$1"
+    local mount_point="$2"
+    if [ -e "${mount_point}" ]; then
+        umount "${mount_point}" 2> /dev/null
+        umount "${part_name}" 2> /dev/null
+        rm -rf "${mount_point}"
     fi
-    mkdir "$2"
-    mount "/dev/$1" "$2"
+    mkdir "${mount_point}"
+    mount "${part_name}" "${mount_point}"
 }
 
 #
@@ -30,7 +32,7 @@ function mountIfNotAlready {
 # $3: HDD ROOT-A partition id e.g. sda5
 # $4: HDD STATE partition id e.g. sda6
 function main {
-    if [ $# -ne 5 ]; then
+    if [ $# -ne 4 ]; then
         echo "Invalid argument!"
         echo "USAGE: install_chromium.sh <chromiumos_image.img> <efi_part> <root_a_part> <state_part>"
         exit 1
@@ -132,14 +134,15 @@ function main {
     local hdd_state_part_no=`echo ${hdd_state_part} | sed 's/^[^0-9]\+\([0-9]\+\)$/\1/'`
     local write_gpt_path="${local_root_a}/usr/sbin/write_gpt.sh"
     # Remove unnecessart partitions & update properties
-    cat "${write_gpt_path}" | grep -vE "_(KERN_(A|B|C)|2|4|6|ROOT_(B|C)|5|7|OEM|8|RESERVED|9|10|RWFW|11)" | sed \
+    cat "${write_gpt_path}" | grep -vE "_(KERN_(A|B|C)|2|4|6|ROOT_(B|C)|5|7|OEM|8|RESERVED|9|10|RWFW|11)" | sed -n \
     -e "s/^\(\s*PARTITION_NUM_EFI_SYSTEM=\)\"[0-9]\+\"$/\1\"${hdd_efi_part_no}\"/g" \
     -e "s/^\(\s*PARTITION_NUM_12=\)\"[0-9]\+\"$/\1\"${hdd_efi_part_no}\"/g" \
     -e "s/^\(\s*PARTITION_NUM_ROOT_A=\)\"[0-9]\+\"$/\1\"${hdd_root_a_part_no}\"/g" \
     -e "s/^\(\s*PARTITION_NUM_3=\)\"[0-9]\+\"$/\1\"${hdd_root_a_part_no}\"/g" \
     -e "s/^\(\s*PARTITION_NUM_STATE=\)\"[0-9]\+\"$/\1\"${hdd_state_part_no}\"/g" \
     -e "s/^\(\s*PARTITION_NUM_1=\)\"[0-9]\+\"$/\1\"${hdd_state_part_no}\"/g" \
-    -e "s/\(\s*DEFAULT_ROOTDEV=\).*$/\1\"\"/" > "${write_gpt_path}"
+    -e "s/\(\s*DEFAULT_ROOTDEV=\).*$/\1\"\"/" \
+    -e "w ${write_gpt_path}"
     if [ $? -eq 0 ]; then
         echo "Done."
     else
