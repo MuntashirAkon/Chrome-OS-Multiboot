@@ -9,10 +9,6 @@ My collection of scripts and tutorials to multiboot Chrome OS with other operati
     - [Creating partitions](#creating-partitions)
     - [Converting Chromium OS to Chrome OS](#converting-chromium-os-to-chrome-os)
     - [Installing on HDD](#installing-on-hdd)
-  * [Post-installation](#post-installation)
-    - [Fix GRUB (the bootloader)](#fix-grub-the-bootloader)
-    - [Fix partition table info](#fix-partition-table-info) [Incomplete]
-    - [Enable tap to click (optional and for Synaptics Touchpad only)](#enable-tap-to-click-optional-and-for-synaptics-touchpad-only)
 - [Updating Chrome OS](#updating-chrome-os) [Incomplete]
 - [Some important Chrome flags](#some-important-chrome-flags)
 - [Mounting internal partitions](#mounting-internal-partitions)
@@ -69,65 +65,6 @@ You'll need to create 3 partitions in GPT mode:
   ```
   Replace `chromiumos_image.img` with the chromium image (should be `chromiumos_image.img`), `sda4` with **EFI-SYSTEM**
   partition's id, `sda5` with **ROOT-A** partition's id and `sda6` with **STATE** partition's id.
-
-#### Post-installation
-
-##### Fix GRUB (the bootloader)
-
-[GRUB fix is applied automatically when you ran `install_chromium.sh`, follow this part only if you get an error]
-
-<details>
-  <summary>View</summary>
-
-In order to boot into the installed OS, the bootloader is needed to be configured properly. The boot parition is **ROOT-A**,
-hence we need the partition UUID of it. To get the partition UUID, run: (assuming `sda5` to be the **ROOT-A** partition)
-```bash
-sudo /sbin/blkid -s PARTUUID -o value /dev/sda5
-```
-Note the above partition UUID.
-
-Now, to fix the bootloader, open `~/localefi/efi/boot/grub.cfg` with your favourite editor with admin privilege, e.g.:
-```bash
-sudo gedit ~/localefi/efi/boot/grub.cfg
-```
-Delete everything from there and copy-and-paste the contents bellow:
-```bash
-set default=0
-set timeout=2
-menuentry "Chrome OS" {
-  linux /syslinux/vmlinuz.A init=/sbin/init boot=local rootwait ro noresume noswap loglevel=7 noinitrd console=  i915.modeset=1 cros_efi cros_debug root=PARTUUID=<partition-uuid>
-}
-```
-Now, replace `<partition-uuid>` with the partition UUID that you've noted earlier.
-</details>
-
-##### Fix partition table info
-To fix partition table info, open `~/localroota/usr/sbin/write_gpt.sh` with your favourite editor with admin privilege, e.g.:
-```bash
-sudo gedit ~/localroota/usr/sbin/write_gpt.sh
-```
-
-TODO
-
-##### Enable tap to click (optional and for Synaptics Touchpad only)
-
-_[Implemented in the script file, follow this part only if you get an error]_
-
-<details>
-  <summary>View</summary>
-
-To enable tap to click, open `~/localroota/etc/gesture/40-touchpad-cmt.conf` with your favourite editor with admin privilege, e.g.:
-```bash
-sudo gedit ~/localroota/etc/gesture/40-touchpad-cmt.conf
-```
-Find `CMT for Synaptics Touchpad` and add these lines in a new line inside this section
-```
-    # Enable tap to click
-    Option          "libinput Tapping Enabled" "1"
-    Option          "Tap Minimum Pressure" "0.1"
-```
-
-</details>
 
 Now you can safely boot into the newly installed OS.
 
