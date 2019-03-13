@@ -23,7 +23,9 @@ My collection of scripts and tutorials to multiboot Chrome OS with other operati
 4. [Caroline & Eve recovery files](https://cros-updates-serving.appspot.com) (for Intel) matching the @arnoldthebat's build
   (check [here](https://www.chromium.org/chromium-os/developer-information-for-chrome-os-devices) for more info)
 5. [install_chrome.h](https://raw.githubusercontent.com/MuntashirAkon/Chrome-OS-Multiboot/master/install_chromium.sh)
-  
+
+If you're going to install Chromium OS (not Chrome OS), you don't need 2 and 4 prerequisites.
+
 ### Process
 
 #### Creating partitions
@@ -35,6 +37,8 @@ You'll need to create 3 partitions in GPT mode:
    20 GB recommended) [assume `sda6`]
 
 #### Converting Chromium OS to Chrome OS
+
+_[Skip this step if you are not going to install Chrome OS, just Chromium OS]_
 
 - Download the prequisites at `~/Downloads/ChromeOS` and extract them there as well.
   Don't delete the zipped files yet (as something might be broken). The file structure should look something like this:
@@ -110,7 +114,7 @@ sudo vim /etc/chrome_dev.conf
 
 ## Mounting internal partitions
 
-(Except where noted, you can follow this guide entirely on Chrome OS)
+_[Except where noted, you can follow this guide entirely on Chrome OS]_
 
 As you may have noticed, internal partitions are not mounted by default (since Chrome OS is never meant to be used this way).
 So, in order to mount the internal partitions, you'll need to edit `/etc/fstab` **_after_ you have created an user account in the Chrome OS.** The idea is to mount them inside the **~/Downloads** folder so that you can access these partitions from there.
