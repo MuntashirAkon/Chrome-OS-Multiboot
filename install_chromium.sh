@@ -109,6 +109,16 @@ function main {
         echo "Failed copying files, may contain corrupted files."
         exit 1
     fi
+    echo "Fixing GRUB..."
+    local hdd_uuid=`/sbin/blkid -s PARTUUID -o value "${hdd_root_a_part}"`
+    local old_uuid=`cat "${local_efi_dir}/efi/boot/grub.cfg" | grep -m 1 "PARTUUID=" | awk '{print $15}' | cut -d'=' -f3`
+    sed -i "s/${old_uuid}/${hdd_uuid}/" "${local_efi_dir}/efi/boot/grub.cfg"
+    if [ $? -eq 0 ]; then
+        echo "Done."
+    else
+        echo "Failed fixing GRUB, please try fixing it manually."
+        exit 1
+    fi
     echo
     echo "Now edit ${local_root_a}/usr/sbin/write_gpt.sh to keep only the required partitions."
     exit 0
