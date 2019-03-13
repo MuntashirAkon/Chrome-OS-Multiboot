@@ -126,6 +126,27 @@ function main {
         # exit 1 # This isn't a critical error
     fi
     
+    echo -n "Updating partition data..."
+    local hdd_efi_part_no=`echo ${hdd_efi_part} | sed 's/^[^0-9]\+\([0-9]\+\)$/\1/'`
+    local hdd_root_a_part_no=`echo ${hdd_root_a_part} | sed 's/^[^0-9]\+\([0-9]\+\)$/\1/'`
+    local hdd_state_part_no=`echo ${hdd_state_part} | sed 's/^[^0-9]\+\([0-9]\+\)$/\1/'`
+    local write_gpt_path="${local_root_a}/usr/sbin/write_gpt.sh"
+    # Remove unnecessart partitions & update properties
+    cat "${write_gpt_path}" | grep -vE "_(KERN_(A|B|C)|2|4|6|ROOT_(B|C)|5|7|OEM|8|RESERVED|9|10|RWFW|11)" | sed \
+    -e "s/^\(\s*PARTITION_NUM_EFI_SYSTEM=\)\"[0-9]\+\"$/\1\"${hdd_efi_part_no}\"/g" \
+    -e "s/^\(\s*PARTITION_NUM_12=\)\"[0-9]\+\"$/\1\"${hdd_efi_part_no}\"/g" \
+    -e "s/^\(\s*PARTITION_NUM_ROOT_A=\)\"[0-9]\+\"$/\1\"${hdd_root_a_part_no}\"/g" \
+    -e "s/^\(\s*PARTITION_NUM_3=\)\"[0-9]\+\"$/\1\"${hdd_root_a_part_no}\"/g" \
+    -e "s/^\(\s*PARTITION_NUM_STATE=\)\"[0-9]\+\"$/\1\"${hdd_state_part_no}\"/g" \
+    -e "s/^\(\s*PARTITION_NUM_1=\)\"[0-9]\+\"$/\1\"${hdd_state_part_no}\"/g" \
+    -e "s/\(\s*DEFAULT_ROOTDEV=\).*$/\1\"\"/" > "${write_gpt_path}"
+    if [ $? -eq 0 ]; then
+        echo "Done."
+    else
+        echo
+        echo "Failed updating partition data, please try fixing it manually."
+        # exit 1 # This isn't a critical error
+    fi
     echo -n "Fixing touchpad..."
     local tp_line=`grep -Fn "06cb:*" "${local_root_a}/etc/gesture/40-touchpad-cmt.conf" | sed 's/^\([0-9]\+\):.*$/\1/'`
     tp_line=$((tp_line+3)) # Add at line#21
@@ -137,8 +158,7 @@ function main {
         echo "Failed fixing touchpad, please try fixing it manually."
         # exit 1 # This isn't a critical error
     fi
-    echo
-    echo "Now edit ${local_root_a}/usr/sbin/write_gpt.sh to keep only the required partitions."
+    echo "Installation complete!"
     exit 0
 }
 
