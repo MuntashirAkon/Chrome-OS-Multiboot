@@ -179,3 +179,4 @@ Now, you can safely reboot. This method should work on multiple user environment
 1. https://github.com/imperador/chromefy
 2. https://docs.google.com/document/d/1uBU4IObDI8IFhSjeCMvKw46O4vKCnfeZTGF7Jx8Brno/edit
 3. https://wiki.debian.org/fstab
+4. https://www.chromium.org/chromium-os/chromiumos-design-docs/disk-format
