@@ -65,7 +65,7 @@ _[Skip this step if you are not going to install Chrome OS, just Chromium OS]_
 
 - Run the following command to install chromium on HDD:
   ```bash
-  cd ~/Downloads/ChromeOS/ && sudo install_chromium.sh chromiumos_image.img sda4 sda5 sda6
+  cd ~/Downloads/ChromeOS/ && sudo bash install_chromium.sh chromiumos_image.img sda4 sda5 sda6
   ```
   Replace `chromiumos_image.img` with the chromium image (should be `chromiumos_image.img`), `sda4` with **EFI-SYSTEM**
   partition's id, `sda5` with **ROOT-A** partition's id and `sda6` with **STATE** partition's id.
