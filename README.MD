@@ -10,6 +10,7 @@ My collection of scripts and tutorials to multiboot Chrome OS with other operati
     - [Converting Chromium OS to Chrome OS](#converting-chromium-os-to-chrome-os)
     - [Installing on HDD](#installing-on-hdd)
 - [Updating Chrome OS](#updating-chrome-os) [Incomplete]
+    - [Want to update natively?](#want-to-update-natively-)
 - [Some important Chrome flags](#some-important-chrome-flags)
 - [Mounting internal partitions](#mounting-internal-partitions)
 - [References](#references)
@@ -73,7 +74,19 @@ _[Skip this step if you are not going to install Chrome OS, just Chromium OS]_
 Now you can safely boot into the newly installed OS.
 
 ## Updating Chrome OS
-TODO
+
+This is still a work in progress. The `update_chromium.sh` script in this repo contains an example of how it can be done. If you don't have TPM related problems (didn't require a TMP1.2 device e.g. caroline), you can use this script to update Chrome OS, otherwise you'll have to wait until I add support for them.
+
+Currently, `update_chromium.sh` takes two arguments: first argument is the recovery.bin file, second argument is the device id of the **ROOT-A** partition (e.g. sda5 if you're following this guide). For example:
+```
+update_chromium.sh ~/Downloads/chromeos_11647.104.3_eve_recovery_stable-channel_mp.bin sda5
+```
+
+You can use Ubuntu Live to update Chrome OS.
+
+### Want to update natively?
+
+Yes, it is possible to update Chrome OS from the Chrome OS itself (without needing another Linux distro). But this requires another partition (namely **ROOT-B**) since you cannot modify the partition you're currently in. I may add support for this kind of update later. 
 
 ## Some important Chrome flags
 
