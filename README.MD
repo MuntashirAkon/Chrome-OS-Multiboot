@@ -1,8 +1,12 @@
 # Chrome OS Multiboot
 
-My collection of scripts and tutorials to multiboot Chrome OS with other operating systems
+My approach to multiboot Chrome OS or Chromium OS on regular machines.
 
-### Index
+> If you're looking for updating you regular installation, nevigate [here](#want-to-update-natively).
+
+<details>
+ <summary>Index</summary>
+ 
 - [Multiboot guide](#multiboot-guide)
   * [Prerequisites](#prerequisites)
   * [Process](#process)
@@ -14,6 +18,7 @@ My collection of scripts and tutorials to multiboot Chrome OS with other operati
 - [Some important Chrome flags](#some-important-chrome-flags)
 - [Mounting internal partitions](#mounting-internal-partitions)
 - [References](#references)
+</details>
 
 ## Multiboot guide
 
