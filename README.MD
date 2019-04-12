@@ -93,7 +93,34 @@ You can use Ubuntu Live to update Chrome OS.
 
 ### Want to update natively?
 
-Yes, it is possible to update Chrome OS from the Chrome OS itself (without needing another Linux distro). But this requires another partition (namely **ROOT-B**) since you cannot modify the partition you're currently in. While I may add support for this kind of update later, you can do the update using the **update_chromium.sh** script as well. But each time you update, you'll need to modify the grub configuration in order to set the right partition to boot into. The idea is that, if you're currently booting from **ROOT-A** (current) partition, you'll install the update in the **ROOT-B** (target) partition and vice versa. To do that you'll need to mount the target partition and delete the content of it and copy everything from the current partition (to make the task easy). Then download the relevant images and run the script using the target partitions device ID as an argument. Then edit the grub config to boot from the target partition. If another update comes in, just install it to the **ROOT-A** partition using the similar process described above. This way you won't need any extra Linux distro (with a cost of another root partition, of course but it is already available in regular installation).
+Yes, it is possible to update Chrome OS from the Chrome OS itself (without needing another Linux distro). But this requires 
+another partition (namely **ROOT-B**) since you cannot modify the partition you're currently in. While I may add support for 
+this kind of update later, you can do the update using the **update_chromium.sh** script as well. But each time you update, 
+you'll need to modify the grub configuration in order to set the right partition to boot into. The idea is that, if you're 
+currently booting from **ROOT-A** (current) partition, you'll install the update in the **ROOT-B** (target) partition and vice 
+versa. To do that you'll need to mount the target partition and delete the content of it and copy everything from the current 
+partition (to make the task easy). Then download the relevant images and run the script using the target partitions device ID 
+as an argument. Then edit the grub config to boot from the target partition. If another update comes in, just install it to 
+the **ROOT-A** partition using the similar process described above. This way you won't need any extra Linux distro (with a 
+cost of another root partition, of course but it is already available in regular installation).
+
+You can also use **cros_update.sh** (available in this repo) to update natively. But ***this script is not tested yet!*** So
+only try it if you know what you're doing. To use the script, you'll need to create a configuration file as 
+`/usr/local/cros_update.conf`. The format is given bellow:
+```
+ROOTA <ROOT-A UUID, lowercase>
+ROOTB <ROOT-B UUID, lowercase>
+EFI <EFI-SYSTEM UUID, lowercase>
+RECOVERY <Code name, eg. eve>
+TPM <optional, Code name of TPM 1.2 distro, eg. caroline>
+```
+You can get UUID for a disk ID using the following command:
+
+```bash
+/sbin/blkid -s PARTUUID -o value /dev/<disk-id>
+```
+
+After setting that, simply run the script without any argument to start updating.
 
 ## Some important Chrome flags
 
