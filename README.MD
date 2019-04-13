@@ -191,6 +191,8 @@ Considering the fact that we may frequently need to change the partitions in the
 - Find your profile path. The quick way would be to open `chrome://version/#profile_path` on your Chrome OS.
   Suppose the profile path is `/home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0`
 - Append `/Downloads` at the end of the profile path (namely Downloads path), i.e. `/home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads`
+  
+  **NOTE:** As of Chrome OS version 74, you may need to append `/MyFiles/Downloads` instead of just `/Downloads`, i.e `/home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/MyFiles/Downloads`. Be sure to try both of them
 - For each of the partitions that you've noted earlier, assign a directory name after the downloads path. For instance, for `sda2`, I can assign `Ocean`, thus the whole directory becomes `/home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads/Ocean`
 - Create `/usr/local/fstab` using vim:
   ```
@@ -213,14 +215,13 @@ Considering the fact that we may frequently need to change the partitions in the
 On your linux distro:
 - Download this file ([mount-internals.conf](https://raw.githubusercontent.com/MuntashirAkon/Chrome-OS-Multiboot/master/mount-internals.conf)) at `~/Downloads` directory.
 - Mount **ROOT-A** partition using file manager or disks (the location should be `/media/${USER}/ROOT-A`)
-- Copy **mount-internals.conf** at **/media/${USER}/ROOT-A/etc/init/**:
+- Copy **mount-internals.conf** at `/media/${USER}/ROOT-A/etc/init/`:
   ```
   sudo cp ~/Downloads/mount-internals.conf /media/${USER}/ROOT-A/etc/init/
   ```
-
 Now, you can safely reboot. This method should work on multiple user environment as well.
 
-**NOTE:** Mounted partitions don't show up on Android, further study needed. 
+**NOTE:** Mounted partitions don't show up on Android, further study needed.
 
 ## References
 1. https://github.com/imperador/chromefy
