@@ -89,7 +89,7 @@ update_chromium.sh ~/Downloads/chromeos_11647.104.3_eve_recovery_stable-channel_
 
 You can use Ubuntu Live to update Chrome OS.
 
-**NOTE:** You may need to re-login after the update (not sure what causes it).
+**NOTE:** Your user account may be reset after update (not sure what causes it though).
 
 ### Want to update natively?
 
@@ -121,6 +121,8 @@ You can get UUID for a disk ID using the following command:
 ```
 
 After setting that, simply run the script without any argument to start updating.
+
+**Note:** **cros_update.sh** automatically downloads the necessary files (> 2 GB, > 5 GB with TPM) and can download only the stable recovery updates.
 
 ## Some important Chrome flags
 
