@@ -73,12 +73,14 @@ _[Skip this step if you are not going to install Chrome OS, just Chromium OS]_
   ```bash
   cd ~/Downloads/ChromeOS/ && sudo bash install_chromium.sh chromiumos_image.img sda4 sda5 sda6
   ```
-  Replace `chromiumos_image.img` with the chromium image (should be `chromiumos_image.img`), `sda4` with **EFI-SYSTEM**
+  Before running the above command, replace `chromiumos_image.img` with the chromium image (should be unchanged if you're following the guide), `sda4` with **EFI-SYSTEM**
   partition's id, `sda5` with **ROOT-A** partition's id and `sda6` with **STATE** partition's id.
 
 Now you can safely boot into the newly installed OS.
 
 ## Updating Chrome OS
+
+_[Applied for Chrome OS only, if you're looking for updating @ArnoldTheBat's Chromium build, contact him instead]_
 
 You can use the **update_chromium.sh** script located in this repo to update Chrome OS to the latest version (should work with regular installation as well). To do this you'll need to download the latest recovery update for your platform (e.g. eve) which can be downloaded from [here](https://cros-updates-serving.appspot.com). If you needed a TPM 1.2 recovery image (e.g. caroline), download the latest recovery image for that as well.
 
