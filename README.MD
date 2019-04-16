@@ -82,6 +82,8 @@ Now you can safely boot into the newly installed OS.
 
 _[Applied for Chrome OS only, if you're looking for updating @ArnoldTheBat's Chromium build, contact him instead]_
 
+**<span color="red">! Warning !</span>** This process is experimental, be sure to issue a report if you stumble upon something.
+
 You can use the **update_chromium.sh** script located in this repo to update Chrome OS to the latest version (should work with regular installation as well). To do this you'll need to download the latest recovery update for your platform (e.g. eve) which can be downloaded from [here](https://cros-updates-serving.appspot.com). If you needed a TPM 1.2 recovery image (e.g. caroline), download the latest recovery image for that as well.
 
 Currently, `update_chromium.sh` takes three arguments (last is optional): the first argument is the recovery.bin file, the second argument is the device id of the **ROOT-A** partition (sda5 if you're following this guide and sda3 for regular installation) and the third argument is the optional TPM 1.2 recovery image. For example:
@@ -143,13 +145,16 @@ Since `Chrome://flags` results in a blank page on Chrome OS, here I've listed so
 --enable-virtual-keyboard
 --enable-lock-screen-apps
 ```
-To add these flags, open `~/localroota/etc/chrome_dev.conf` with your favourite editor with admin privilege, e.g.:
+To add these flags, mount the **ROOT-A** partition in any linux distro (assume it is mounted at `/media/$USER/ROOT-A`) and open `/media/$USER/ROOT-A/etc/chrome_dev.conf` using your favourite text editor with admin privileges, e.g.:
 ```bash
-sudo gedit ~/localroota/etc/chrome_dev.conf
+sudo gedit /media/$USER/ROOT-A/etc/chrome_dev.conf
 ```
-Now, add the flags at the bottom of the file.
+Add your desired flags at the bottom of the file (each in a new line or separated by a space) and save it.
 
-You can also test them _inside_ Chrome OS, to do that run the following commands on CrOS terminal:
+Now you can safely restart and boot into Chrome OS.
+
+**<span color="blue">!! PRO TIPS !!</span>**
+You can also test them _inside_ Chrome OS (will be reset upon a restart), to do that run the following commands on CrOS terminal:
 ```bash
 sudo su
 cp /etc/chrome_dev.conf /usr/local/
@@ -160,8 +165,6 @@ Now, you can use `vim` editor to edit the file.
 ```bash
 sudo vim /etc/chrome_dev.conf
 ```
-
-**NOTE:** The latter method is for testing purposes only as the binding will be reset upon a restart.
 
 ## Mounting internal partitions
 
