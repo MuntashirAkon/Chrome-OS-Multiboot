@@ -134,15 +134,15 @@ function main {
     local hdd_state_part_no=`echo ${hdd_state_part} | sed 's/^[^0-9]\+\([0-9]\+\)$/\1/'`
     local write_gpt_path="${local_root_a}/usr/sbin/write_gpt.sh"
     # Remove unnecessart partitions & update properties
-    cat "${write_gpt_path}" | grep -vE "_(KERN_(A|B|C)|2|4|6|ROOT_(B|C)|5|7|OEM|8|RESERVED|9|10|RWFW|11)" | sed -n \
+    cat "${write_gpt_path}" | grep -vE "_(KERN_(A|B|C)|2|4|6|ROOT_(B|C)|5|7|OEM|8|RESERVED|9|10|RWFW|11)" | sed \
     -e "s/^\(\s*PARTITION_NUM_EFI_SYSTEM=\)\"[0-9]\+\"$/\1\"${hdd_efi_part_no}\"/g" \
     -e "s/^\(\s*PARTITION_NUM_12=\)\"[0-9]\+\"$/\1\"${hdd_efi_part_no}\"/g" \
     -e "s/^\(\s*PARTITION_NUM_ROOT_A=\)\"[0-9]\+\"$/\1\"${hdd_root_a_part_no}\"/g" \
     -e "s/^\(\s*PARTITION_NUM_3=\)\"[0-9]\+\"$/\1\"${hdd_root_a_part_no}\"/g" \
     -e "s/^\(\s*PARTITION_NUM_STATE=\)\"[0-9]\+\"$/\1\"${hdd_state_part_no}\"/g" \
     -e "s/^\(\s*PARTITION_NUM_1=\)\"[0-9]\+\"$/\1\"${hdd_state_part_no}\"/g" \
-    -e "s/\(\s*DEFAULT_ROOTDEV=\).*$/\1\"\"/" \
-    -e "w ${write_gpt_path}"
+    -e "s/\(\s*DEFAULT_ROOTDEV=\).*$/\1\"\"/" | tee "${write_gpt_path}" > /dev/null
+    # -e "w ${write_gpt_path}" # Doesn't work on CrOS
     if [ $? -eq 0 ]; then
         echo "Done."
     else
