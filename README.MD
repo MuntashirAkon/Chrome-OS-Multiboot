@@ -25,12 +25,13 @@ My approach to multiboot Chrome OS or Chromium OS on regular machines.
 ### Prerequisites
 1. A Linux distro e.g. Ubuntu, Mint, etc. (may need installing since the files to be downloaded need a lot of space)
 2. [chromefy.h](https://github.com/imperador/chromefy/releases)
-3. @arnoldthebat's [Chromium OS Special build](https://chromium.arnoldthebat.co.uk/index.php?dir=special&order=modified&sort=desc)
-4. [Caroline & Eve recovery files](https://cros-updates-serving.appspot.com) (for Intel) matching the @arnoldthebat's build
+3. [swtpm.tar](https://github.com/imperador/chromefy/raw/master/swtpm.tar) - To solve TPM related problem on modern PCs
+4. @arnoldthebat's [Chromium OS Special build](https://chromium.arnoldthebat.co.uk/index.php?dir=special&order=modified&sort=desc)
+5. [Eve or similar recovery file](https://cros-updates-serving.appspot.com) matching your hardware specifications
   (check [here](https://www.chromium.org/chromium-os/developer-information-for-chrome-os-devices) for more info)
-5. [install_chrome.h](https://raw.githubusercontent.com/MuntashirAkon/Chrome-OS-Multiboot/master/install_chromium.sh)
+6. [install_chrome.h](https://raw.githubusercontent.com/MuntashirAkon/Chrome-OS-Multiboot/master/install_chromium.sh)
 
-If you're going to install Chromium OS (not Chrome OS), you don't need 2 and 4 prerequisites.
+If you're going to install Chromium OS (not Chrome OS), you don't need 2 and 5 prerequisites.
 
 ### Process
 
@@ -52,20 +53,17 @@ _[Skip this step if you are not going to install Chrome OS, just Chromium OS]_
   Camd64OS_R72-11316.B-Special.7z
   chromefy.sh
   install_chromium.sh
-  chromeos_11316.165.0_caroline_recovery_stable-channel_mp.bin
-  chromeos_11316.165.0_caroline_recovery_stable-channel_mp.bin.zip
   chromeos_11316.165.0_eve_recovery_stable-channel_mp.bin
   chromeos_11316.165.0_eve_recovery_stable-channel_mp.bin.zip
   chromiumos_image.img
+  swtpm.tar
   ```
 - Now, run the following command to convert Chromium OS to Chrome OS:
   ```bash
-  cd ~/Downloads/ChromeOS/ && sudo bash chromefy.sh chromiumos_image.img chromeos_11151.113.1_eve_recovery_stable-channel_mp.bin chromeos_11151.113.0_caroline_recovery_stable-channel_mp.bin
+  cd ~/Downloads/ChromeOS/ && sudo bash chromefy.sh chromiumos_image.img chromeos_11151.113.1_eve_recovery_stable-channel_mp.bin swtpm.tar
   ```
-  As you perhaps noticed, `chromeos_11151.113.1_eve_recovery_stable-channel_mp.bin` and
-  `chromeos_11151.113.0_caroline_recovery_stable-channel_mp.bin` should match the versions that you're using.
   
-  At some point, the script might prompt you to know if you will set SELINUX=permissive, just press `n` and enter.
+  At some point, the script might prompt you to know if you want to set **SELINUX** to *permissive*, just press `n` and enter.
 
 #### Installing on HDD
 
@@ -83,6 +81,8 @@ Now you can safely boot into the newly installed OS.
 _[Applied for Chrome OS only, if you're looking for updating @ArnoldTheBat's Chromium build, contact him instead]_
 
 **<span color="red">! Warning !</span>** This process is experimental, be sure to issue a report if you stumble upon something.
+
+**<span color="blue">! Notice !</span>** The script utilizes an old method to solve TPM-related problems. Please wait till I update the script.
 
 You can use the **update_chromium.sh** script located in this repo to update Chrome OS to the latest version (should work with regular installation as well). To do this you'll need to download the latest recovery update for your platform (e.g. eve) which can be downloaded from [here](https://cros-updates-serving.appspot.com). If you needed a TPM 1.2 recovery image (e.g. caroline), download the latest recovery image for that as well.
 
