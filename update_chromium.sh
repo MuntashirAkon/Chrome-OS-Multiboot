@@ -3,7 +3,7 @@
 # NOTE: TPM 1.2 fix is adapted from the Chromefy project and
 # this copyright doesn't apply them.
 
-# USAGE: update_chromium.sh <recovery.bin> <root_a_part>  [<tpm_recovery.bin>]
+# USAGE: update_chromium.sh <recovery.bin> <root_a_part>  [<swtpm.tar>]
 # Example: update_chromium.sh ~/Downloads/chromeos_11647.104.3_eve_recovery_stable-channel_mp.bin sda5
 
 # TODO: Run cleanup
@@ -38,19 +38,18 @@ function mountIfNotAlready {
 # The main function
 # $1: recovery.bin
 # $2: ROOT-A partition id, e.g. sda5
+# $3: swtpm.tar file location (optional)
 function main {
     if [ $# -ne 2 ] && [ $# -ne 3 ]; then
         echo "Invalid argument!"
-        echo "USAGE: update_chromium.sh <recovery.bin> <root_a_part> [<tpm_recovery.bin>]"
+        echo "USAGE: update_chromium.sh <recovery.bin> <root_a_part> [<swtpm.tar>]"
         exit 1
     fi
     
     local fix_tpm=false
     local tpm_root_a_part=""
     if [ $# -eq 3 ]; then
-       local img_tpm=$3
-       local tpm_disk=`/sbin/losetup --show -fP "${img_tpm}"`
-       tpm_root_a_part="${tpm_disk}p3"
+       local swtpm_tar=$3
        fix_tpm=true
     fi
     
@@ -67,7 +66,7 @@ function main {
     local root="/home/${user}"
     local hdd_root_a="${root}/roota"
     local img_root_a="${root}/localroota"
-    local tpm_root_a="${root}/tmproota"
+    local swtpm="${root}/swtpm"
     local backup="${root}/cros_backup"
     if [ -e "${backup}" ]; then
         rm -rf "${backup}"
@@ -81,7 +80,7 @@ function main {
     # Mount partition#3 (ROOT-A) of the image
     mountIfNotAlready "${img_root_a_part}" "${img_root_a}" 1
     # Mount the ROOT-A partition of the HDD
-    mountIfNotAlready "${hdd_root_a_part}" "${hdd_root_a}" 0
+    mountIfNotAlready "${hdd_root_a_part}" "${hdd_root_a}" 0    
     # Backup important data
     # .. write_gpt.sh
     # .. 40-touchpad-cmt.conf
@@ -133,27 +132,31 @@ function main {
     # Fix TPM
     if [ "${fix_tpm}" = true ]; then
         echo -n "Fixing TPM..."
-        # Remove TPM 2.0 services
-        rm -rf "${hdd_root_a}"/etc/init/{attestationd,cr50-metrics,cr50-result,cr50-update,tpm_managerd,trunksd,u2fd}.conf
-        # Copy TPM 1.2 file
-        mountIfNotAlready "${tpm_root_a_part}" "${tpm_root_a}" 1
-        cp -a "${tpm_root_a}"/etc/init/{chapsd,cryptohomed,cryptohomed-client,tcsd,tpm-probe}.conf "${hdd_root_a}"/etc/init/
-	    cp -a "${tpm_root_a}"/etc/tcsd.conf "${hdd_root_a}"/etc/
-	    cp -a "${tpm_root_a}"/usr/bin/{tpmc,chaps_client} "${hdd_root_a}"/usr/bin/
-    	cp -a "${tpm_root_a}"/usr/lib64/libtspi.so{,.1{,.2.0}} "${hdd_root_a}"/usr/lib64/
-	    cp -a "${tpm_root_a}"/usr/sbin/{chapsd,cryptohome,cryptohomed,cryptohome-path,tcsd} "${hdd_root_a}"/usr/sbin/
-	    cp -a "${tpm_root_a}"/usr/share/cros/init/{tcsd-pre-start,chapsd}.sh "${hdd_root_a}"/usr/share/cros/init/
-        cp -a "${tpm_root_a}"/etc/dbus-1/system.d/{Cryptohome,org.chromium.Chaps}.conf "${hdd_root_a}"/etc/dbus-1/system.d/
-        if [ ! -f "${hdd_root_a}"/usr/lib64/libecryptfs.so ] && [ -f "${hdd_root_a}"/usr/lib64/libecryptfs.so ]; then
-            cp -a "${tpm_root_a}"/usr/lib64/libecryptfs* "${hdd_root_a}"/usr/lib64/
-            cp -a "${tpm_root_a}"/usr/lib64/ecryptfs "${hdd_root_a}"/usr/lib64/
-        fi
+        # Extract swtpm.tar
+        tar -xf "$3" -C "${root}"
+        # Copy necessary files
+        cp -a "${swtpm}"/usr/sbin/* "${hdd_root_a}/usr/sbin"
+        cp -a "${swtpm}"/usr/lib64/* "${hdd_root_a}/usr/lib64"
+        # Symlink libtpm files
+        cd "${hdd_root_a}/usr/lib64"
+        ln -s libswtpm_libtpms.so.0.0.0 libswtpm_libtpms.so.0
+        ln -s libswtpm_libtpms.so.0 libswtpm_libtpms.so
+        ln -s libtpms.so.0.6.0 libtpms.so.0
+        ln -s libtpms.so.0 libtpms.so
+        ln -s libtpm_unseal.so.1.0.0 libtpm_unseal.so.1
+        ln -s libtpm_unseal.so.1 libtpm_unseal.so
+        # Start at boot (does is necessary?)
+        cat > "${hdd_root_a}/etc/init/_vtpm.conf" <<EOL
+    start on started boot-services
 
-    	# Add tss user and group
-	    echo 'tss:!:207:root,chaps,attestation,tpm_manager,trunks,bootlockboxd' >> "${hdd_root_a}"/etc/group
-	    echo 'tss:!:207:207:trousers, TPM and TSS operations:/var/lib/tpm:/bin/false' >> "${hdd_root_a}"/etc/passwd
-	    echo "Done."
-	    # TODO: Verify whether everything is copied as expected
+    script
+        mkdir -p /var/lib/trunks
+        modprobe tpm_vtpm_proxy
+        swtpm chardev --vtpm-proxy --tpm2 --tpmstate dir=/var/lib/trunks --ctrl type=tcp,port=10001
+        swtpm_ioctl --tcp :10001 -i
+    end script
+EOL
+        echo "Done."
     fi
     
     # Set SELinux to permissive
