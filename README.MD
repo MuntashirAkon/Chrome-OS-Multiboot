@@ -26,7 +26,7 @@ My approach to multiboot Chrome OS or Chromium OS on regular machines.
 1. A Linux distro e.g. Ubuntu, Mint, etc. (may need installing since the files to be downloaded need a lot of space)
 2. [chromefy.h](https://github.com/imperador/chromefy/releases)
 3. [swtpm.tar](https://github.com/imperador/chromefy/raw/master/swtpm.tar) - To solve TPM related problem on modern PCs
-4. @arnoldthebat's [Chromium OS Special build](https://chromium.arnoldthebat.co.uk/index.php?dir=special&order=modified&sort=desc)
+4. @arnoldthebat's [Chromium OS Special build](https://chromium.arnoldthebat.co.uk/index.php?dir=special&order=modified&sort=desc) (R74 or later)
 5. [Eve or similar recovery file](https://cros-updates-serving.appspot.com) matching your hardware specifications
   (check [here](https://www.chromium.org/chromium-os/developer-information-for-chrome-os-devices) for more info)
 6. [install_chrome.h](https://raw.githubusercontent.com/MuntashirAkon/Chrome-OS-Multiboot/master/install_chromium.sh)
