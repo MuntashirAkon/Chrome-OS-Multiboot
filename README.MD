@@ -81,20 +81,18 @@ _[Applied for Chrome OS only, if you're looking for updating @ArnoldTheBat's Chr
 
 **<span color="red">! Warning !</span>** This process is experimental, be sure to issue a report if you stumble upon something.
 
-**<span color="blue">! Notice !</span>** The script utilizes an old method to solve TPM-related problems. Please wait till I update the script.
+You can use the **update_chromium.sh** script located in this repo to update Chrome OS to the latest version (should work with regular installation as well). To do this you'll need to download the latest recovery update for your platform (e.g. eve) which can be downloaded from [here](https://cros-updates-serving.appspot.com). If you needed **swtpm.tar**, download the latest file from [here](https://github.com/imperador/chromefy/raw/master/swtpm.tar).
 
-You can use the **update_chromium.sh** script located in this repo to update Chrome OS to the latest version (should work with regular installation as well). To do this you'll need to download the latest recovery update for your platform (e.g. eve) which can be downloaded from [here](https://cros-updates-serving.appspot.com). If you needed a TPM 1.2 recovery image (e.g. caroline), download the latest recovery image for that as well.
-
-Currently, `update_chromium.sh` takes three arguments (last is optional): the first argument is the recovery.bin file, the second argument is the device id of the **ROOT-A** partition (sda5 if you're following this guide and sda3 for regular installation) and the third argument is the optional TPM 1.2 recovery image. For example:
+Currently, `update_chromium.sh` takes three arguments (last is optional): the first argument is the recovery.bin file, the second argument is the device id of the **ROOT-A** partition (`sda5` if you're following this guide and `sda3` for regular installation) and the third argument is the optional **swtpm.tar**. For example:
 ```
-update_chromium.sh ~/Downloads/chromeos_11647.104.3_eve_recovery_stable-channel_mp.bin sda5 ~/Downloads/chromeos_11647.104.0_caroline_recovery_stable-channel_mp.bin
+update_chromium.sh ~/Downloads/chromeos_11647.104.3_eve_recovery_stable-channel_mp.bin sda5 swtpm.tar
 ```
 
-You can use Ubuntu Live to update Chrome OS.
-
-**NOTE:** Your user account may be reset after update (not sure what causes it though).
+You can use Ubuntu Live (ie. without installing a Linux distro) to update Chrome OS.
 
 ### Want to update natively?
+
+**<span color="blue">! Notice !</span>** **cros_update.sh** utilizes an old method to solve TPM-related problems. Please wait till I update the script.
 
 Yes, it is possible to update Chrome OS from the Chrome OS itself (without needing another Linux distro). But this requires 
 another partition (namely **ROOT-B**) since you cannot modify the partition you're currently in. While I may add support for 
