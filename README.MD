@@ -15,7 +15,6 @@ My approach to multiboot Chrome OS or Chromium OS on regular machines.
     - [Installing on HDD](#installing-on-hdd)
 - [Updating Chrome OS](#updating-chrome-os)
     - [Want to update natively?](#want-to-update-natively) [Incomplete]
-- [Some important Chrome flags](#some-important-chrome-flags)
 - [Mounting internal partitions](#mounting-internal-partitions)
 - [References](#references)
 </details>
@@ -127,44 +126,6 @@ You can get UUID for a disk ID using the following command:
 After setting that, simply run the script without any argument to start updating.
 
 **Note:** **cros_update.sh** automatically downloads the necessary files (> 2 GB, > 5 GB with TPM) and can download only the stable recovery updates.
-
-## Some important Chrome flags
-
-Since `Chrome://flags` results in a blank page on Chrome OS, here I've listed some important Chrome flags for better user experience.
-```
---enable-fast-unload
---enable-google-branded-context-menu
---enable-offline-auto-reload-visible-only
---enable-offline-auto-reload
---enable-physical-keyboard-autocorrect
---enable-quic
---enable-smooth-scrolling
---enable-wifi-credential-sync
---enable-features=Pepper3DImageChromium,PointerEvent,MachineLearningService,ChromeOSAssistant,EnableBackgroundBlur,Crostini,ExperimentalCrostiniUI,ArcEnableUnifiedAudioFocus,ArcVpn,ArcBootCompletedBroadcast,ChromeOSAccountManager,EnableNewStyleLauncher,NewStyleNotifications,ExperimentalUi,ParallelDownloading,UseModernMediaControls,CrostiniUsbSupport,EnableAppShortcutSearch,EnableBackgroundBlur,EnablePlayStoreAppSearch,EnableHomeLauncher,EnableSettingsShortcutSearch,EnableAppsGridGapFeature,
---show-saved-copy
---enable-virtual-keyboard
---enable-lock-screen-apps
-```
-To add these flags, mount the **ROOT-A** partition in any linux distro (assume it is mounted at `/media/$USER/ROOT-A`) and open `/media/$USER/ROOT-A/etc/chrome_dev.conf` using your favourite text editor with admin privileges, e.g.:
-```bash
-sudo gedit /media/$USER/ROOT-A/etc/chrome_dev.conf
-```
-Add your desired flags at the bottom of the file (each in a new line or separated by a space) and save it.
-
-Now you can safely restart and boot into Chrome OS.
-
-**<span color="blue">!! PRO TIPS !!</span>**
-You can also test them _inside_ Chrome OS (will be reset upon a restart), to do that run the following commands on CrOS terminal:
-```bash
-sudo su
-cp /etc/chrome_dev.conf /usr/local/
-mount --bind /usr/local/chrome_dev.conf /etc/chrome_dev.conf
-exit
-```
-Now, you can use `vim` editor to edit the file.
-```bash
-sudo vim /etc/chrome_dev.conf
-```
 
 ## Mounting internal partitions
 
