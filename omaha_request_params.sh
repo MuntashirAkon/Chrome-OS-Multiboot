@@ -62,16 +62,16 @@ target_channel_="${kUpdateChannelKey}"
 if [ "${CUSTOM_RELEASE_TRACK}" ]; then target_channel_="${CUSTOM_RELEASE_TRACK}"; fi
 if [ "${current_channel_}" == "${target_channel_}" ]; then
   if [ -e "/.nodelta" ]; then
-    delta_okay="false";
+    delta_okay_="false";
   else
-    delta_okay="true"
+    delta_okay_="true"
   fi
 else
-  delta_okay="false"
+  delta_okay_="false"
 fi
 update_url_="${CHROMEOS_AUSERVER}"
 if [ "${update_url_}" == "" ]; then update_url_="${kProductionOmahaUrl}"; fi
-interactive_="false"
+interactive_=true
 #
 # OmahaRequestDeviceParams::UpdateDownloadChannel
 #
