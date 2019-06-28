@@ -3,52 +3,110 @@
 # NOTE: TPM 1.2 fix is adapted from the Chromefy project and
 # this copyright doesn't apply them.
 
+
 if [ $UID -ne 0 ]; then
     echo "This script must be run as root!"
     exit 1
 fi
 
+
 # Get installed version info
-# Output: <milestone> <platform version> <cros version>
-# Example: 72 11316.165.0 72.0.3626.122
+# Output: <code name> <milestone> <platform version> <cros version>
+# Example: eve 72 11316.165.0 72.0.3626.122
 function get_installed {
-  local rel_info=`cat /etc/lsb-release | grep CHROMEOS_RELEASE_BUILDER_PATH | sed -e 's/^.*=\(.*\)-release\/R\(.*\)-\(.*\)$/\2 \3/'` # \1 = code name, eg. eve
+  local rel_info=`cat /etc/lsb-release | grep CHROMEOS_RELEASE_BUILDER_PATH | sed -e 's/^.*=\(.*\)-release\/R\(.*\)-\(.*\)$/\1 \2 \3/'` # \1 = code name, eg. eve
   local cros_v=`/opt/google/chrome/chrome --version | sed -e 's/^[^0-9]\+\([0-9\.]\+\).*$/\1/'`
   echo "${rel_info} ${cros_v}"
 }
 
-# Get current (stable) version info
-# $1: Code name, e.g. eve
-# Output: <cros version> <platform version>
-# Example: 72.0.3626.122 11316.165.0
-function get_current {
-  local code_name=$1
-  local rel_info=`curl -sL https://cros-updates-serving.appspot.com/csv | grep -E "\b${code_name}\b" | sed 's/^[^,]\+,[^,]\+,\([^,]\+\),\([^,]\+\),.*$/\1 \2/'`
-  echo $rel_info
+
+# Get environment variable from recovery.conf
+# $1: recovery.conf url
+# $2: code name (all caps)
+# $3: variable name
+# Output: variable content
+function get_env {
+  local recovery=$1
+  local loc=`cat "${recovery}" | grep -n "\b$2\b" | sed 's/:.*//' 2> /dev/null` # Get line number
+  local match=$3
+  local matched=
+
+  local i=${loc}
+  while true; do
+    i=$(( i + 1 ))
+    local text=`sed -n "${i}p" "${recovery}" 2> /dev/null`
+    if [ "${text}" == "" ]; then break; fi
+    echo "${text}" | grep "\b${match}\b" > /dev/null 2>&1
+    if [ $? -ne 0 ]; then continue; fi
+    matched=`echo "${text}" | sed 's/.*=\(.*\)/\1/' 2> /dev/null`
+    break
+  done
+
+  if [ "${matched}" == "" ]; then
+    i=${loc}
+    while true; do
+      i=$(( i - 1 ))
+      local text=`sed -n "${i}p" "${recovery}" 2> /dev/null`
+      if [ "${text}" == "" ]; then break; fi
+      echo "${text}" | grep "\b${match}\b" > /dev/null 2>&1
+      if [ $? -ne 0 ]; then continue; fi
+      matched=`echo "${text}" | sed 's/.*=\(.*\)/\1/' 2> /dev/null`
+      break
+    done
+  fi
+  # return var content
+  echo "${matched}"
 }
 
-# Check if there's an update
+
+# Check if there's an update, download it if available.
 # $1: Code Name
 # $2: Milestone
 # $3: Platform version
 # $4: Cros version
-# NOTE: <update available> is 0 if there's an update, 1 otherwise
-function update_available {
-  local code_name=$1
-  local remote_data=`get_current "${code_name}"`
+# Output: recovery file location
+function download_update {
+  local code_name=`echo "$1" | awk '{ print toupper($0) }'`
+  local recovery="/tmp/recovery.conf"
+  
+  curl -sL "https://dl.google.com/dl/edgedl/chromeos/recovery/recovery.conf" -o "${recovery}"
+
   local ins_plarform=$3
-  local rem_platform=`echo "${remote_data}" | awk '{print $2}'`
+  local rem_platform=`get_env "${recovery}" "${code_name}" 'version'`
+  local md5sum=`get_env "${recovery}" "${code_name}" 'md5'`
+  local file_size=`get_env "${recovery}" "${code_name}" 'zipfilesize'`
+  local file_name=`get_env "${recovery}" "${code_name}" 'file'`
+  local file_url=`get_env "${recovery}" "${code_name}" 'url'`
+  file_size=`bc -l <<< "scale=2; ${file_size}/1073741824"`
 
   if [ "${ins_plarform}" = "${rem_platform}" ]; then
-    echo ""
-    return 1
-  else
-    echo "https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_${rem_platform}_${code_name}_recovery_stable-channel_mp.bin.zip"
+    echo "No update available."
+    exit 0
+  else # Update available
+    echo "Update available."
+    echo "Downloading ${file_name} (${file_size} GB)..."
+    # TODO: take ${root} as input
+    local user=`logname`
+    if [ $? -ne 0 ]; then
+        user="chronos"
+    fi
+    local root="/home/${user}"
+    local file_loc_zip="${root}/${file_name}.zip"
+    local file_loc="${root}/${file_name}"
+    curl -\#L -o "${file_loc_zip}" "${file_url}"
+    # TODO: match checksum
+    if [ $? -ne 0 ]; then
+        echo "Failed to download ${file_name}. Try again."
+        exit 1
+    fi
+    unzip -d "${root}" "${file_loc_zip}"
+    rm ${file_loc_zip}
+    echo "${file_loc}"
     return 0
   fi
 }
 
-#
+
 # Cleanup the mount point if exists
 # $1: Partition name e.g. /dev/sda11
 # $2: Mount point
@@ -63,6 +121,7 @@ function cleanupIfAlreadyExists {
     mkdir "${mount_point}"
 }
 
+
 function main {
     echo "Chrome OS Updater"
     echo "-----------------"
@@ -73,30 +132,25 @@ function main {
     touch "${conf_path}"
 
     # cros_update.conf format:
-    # ROOTA <ROOT-A UUID, lowercase>
-    # ROOTB <ROOT-B UUID, lowercase>
-    # EFI <EFI-SYSTEM UUID, lowercase>
-    # RECOVERY <Code name, eg. eve>
-    # TPM <optional, Code name of TPM 1.2 distro, eg. caroline>
+    # ROOTA='<ROOT-A UUID, lowercase>'
+    # ROOTB='<ROOT-B UUID, lowercase>'
+    # EFI='<EFI-SYSTEM UUID, lowercase>'
+    # TPM=true/false
 
     # Read cros_update.conf
-    local root_a_uuid=`grep -E '\s*ROOTA' "${conf_path}" | awk '{print $2}'`
-    local root_b_uuid=`grep -E '\s*ROOTB' "${conf_path}" | awk '{print $2}'`
-    local efi_uuid=`grep -E '\s*EFI' "${conf_path}" | awk '{print $2}'`
-    local recovery_code_name=`grep -E '\s*RECOVERY' "${conf_path}" | awk '{print $2}'`
-    local tpm_code_name=`grep -E '\s*RECOVERY' "${conf_path}" | awk '{print $2}'`
+    source "${conf_path}"
+    local root_a_uuid=${ROOTA}
+    local root_b_uuid=${ROOTB}
+    local efi_uuid=${EFI}
 
     # Validate conf
-    if [ "${root_a_uuid}" = "" ] || [ "${root_b_uuid}" = "" ] || [ "${recovery_code_name}" = "" ]; then
+    if [ "${root_a_uuid}" = "" ] || [ "${root_b_uuid}" = "" ]; then
       echo "Invalid configuration, mandatory items missing."
       exit 1
     fi
 
     # Whether to apply TPM 1.2 fix
-    local tpm_fix=true
-    if [ "${tpm_code_name}" = "" ]; then
-      tpm_fix=false
-    fi
+    local tpm_fix=${TPM}
 
     # Convert uuid to /dev/sdXX
     local root_a_part=`sudo /sbin/blkid --uuid "${root_a_uuid}"`
@@ -112,47 +166,30 @@ function main {
       t_root="${root_a_part}"
     fi
 
-    # Check for update
-    echo "Checking for update..."
-    local installed_data=`get_installed`
-    local recovery_url=`update_available "${recovery_code_name}" ${installed_data}`
-    if [ "${recovery_url}" = "" ]; then
-      echo "No update available."
-      exit 1
-    fi
-    local tpm_url=''
-    if [ "${tpm_fix}" = true ]; then
-      tpm_url=`update_available "${tpm_code_name}" ${installed_data}`
-      if [ "${tpm_url}" = "" ]; then
-        echo "No TPM update available."
-        exit 1
-      fi
-    fi
-
-    # Download update(s)
-    echo "Downloading update(s)..."
+    # Set root directory
     local user=`logname`
     if [ $? -ne 0 ]; then
-        user="chronos"
+      user="chronos"
     fi
     local root="/home/${user}"
-    local tpm_img="${root}/${tpm_code_name}.bin"
-    local recovery_img="${root}/${recovery_code_name}.bin"
-    # FIXME: Ask to resume download if interrupted
-    echo -n "Dowloading ${recovery_code_name}..."
-    curl -\#L -o "${recovery_img}" "${recovery_url}"
-    echo "Done."
-    if [ "${tpm_fix}" = true ]; then
-      echo -n "Dowloading ${tpm_code_name}..."
-      curl -\#L -o "${tpm_img}" "${tpm_url}"
-      echo "Done."
-    fi
+
+
+    # Check for update & download them
+    echo "Checking for update..."
+    local installed_data=`get_installed`
+    local recovery_img=`download_update ${installed_data}`
     
+    local swtpm_tar="${root}/swtpm.tar"
+    if [ "${tpm_fix}" == true ]; then
+      echo "Downloading swtpm.tar..."
+      curl -\#L -o "${swtpm_tar}" "https://github.com/imperador/chromefy/raw/master/swtpm.tar"
+    fi
+
     # Update
     echo -n "Updating Chrome OS..."
     local hdd_root="${root}/root" # Target root
     local img_root_a="${root}/localroota"
-    local tpm_root_a="${root}/tmproota"
+    local swtpm="${root}/swtpm"
     
     # Mount target partition
     cleanupIfAlreadyExists "${t_root}" "${hdd_root}"
@@ -179,30 +216,32 @@ function main {
     echo "Done."
     # Apply TPM fix
     if [ "${tpm_fix}" = true ]; then
-        echo -n "Fixing TPM..."
-        # Remove TPM 2.0 services
-        rm -rf "${hdd_root}"/etc/init/{attestationd,cr50-metrics,cr50-result,cr50-update,tpm_managerd,trunksd,u2fd}.conf
-        # Copy TPM 1.2 file
-        local tpm_disk=`/sbin/losetup --show -fP "${tpm_img}"`
-        local tpm_root_a_part="${tpm_disk}p3"
-        cleanupIfAlreadyExists "${tpm_root_a_part}" "${tpm_root_a}"
-        mount -o ro "${tpm_root_a_part}" "${tpm_root_a}"
-        cp -a "${tpm_root_a}"/etc/init/{chapsd,cryptohomed,cryptohomed-client,tcsd,tpm-probe}.conf "${hdd_root}"/etc/init/
-	    cp -a "${tpm_root_a}"/etc/tcsd.conf "${hdd_root}"/etc/
-	    cp -a "${tpm_root_a}"/usr/bin/{tpmc,chaps_client} "${hdd_root}"/usr/bin/
-    	cp -a "${tpm_root_a}"/usr/lib64/libtspi.so{,.1{,.2.0}} "${hdd_root}"/usr/lib64/
-	    cp -a "${tpm_root_a}"/usr/sbin/{chapsd,cryptohome,cryptohomed,cryptohome-path,tcsd} "${hdd_root}"/usr/sbin/
-	    cp -a "${tpm_root_a}"/usr/share/cros/init/{tcsd-pre-start,chapsd}.sh "${hdd_root}"/usr/share/cros/init/
-        cp -a "${tpm_root_a}"/etc/dbus-1/system.d/{Cryptohome,org.chromium.Chaps}.conf "${hdd_root}"/etc/dbus-1/system.d/
-        if [ ! -f "${hdd_root}"/usr/lib64/libecryptfs.so ] && [ -f "${hdd_root}"/usr/lib64/libecryptfs.so ]; then
-            cp -a "${tpm_root_a}"/usr/lib64/libecryptfs* "${hdd_root}"/usr/lib64/
-            cp -a "${tpm_root_a}"/usr/lib64/ecryptfs "${hdd_root}"/usr/lib64/
-        fi
+      echo -n "Fixing TPM..."
+      # Extract swtpm.tar
+      tar -xf "${swtpm_tar}" -C "${root}"
+      # Copy necessary files
+        cp -a "${swtpm}"/usr/sbin/* "${hdd_root}/usr/sbin"
+        cp -a "${swtpm}"/usr/lib64/* "${hdd_root}/usr/lib64"
+        # Symlink libtpm files
+        cd "${hdd_root}/usr/lib64"
+        ln -s libswtpm_libtpms.so.0.0.0 libswtpm_libtpms.so.0
+        ln -s libswtpm_libtpms.so.0 libswtpm_libtpms.so
+        ln -s libtpms.so.0.6.0 libtpms.so.0
+        ln -s libtpms.so.0 libtpms.so
+        ln -s libtpm_unseal.so.1.0.0 libtpm_unseal.so.1
+        ln -s libtpm_unseal.so.1 libtpm_unseal.so
+        # Start at boot (does is necessary?)
+        cat > "${hdd_root}/etc/init/_vtpm.conf" <<EOL
+    start on started boot-services
 
-    	# Add tss user and group
-	    echo 'tss:!:207:root,chaps,attestation,tpm_manager,trunks,bootlockboxd' >> "${hdd_root}"/etc/group
-	    echo 'tss:!:207:207:trousers, TPM and TSS operations:/var/lib/tpm:/bin/false' >> "${hdd_root}"/etc/passwd
-	    echo "Done."
+    script
+        mkdir -p /var/lib/trunks
+        modprobe tpm_vtpm_proxy
+        swtpm chardev --vtpm-proxy --tpm2 --tpmstate dir=/var/lib/trunks --ctrl type=tcp,port=10001
+        swtpm_ioctl --tcp :10001 -i
+    end script
+EOL
+        echo "Done."
     fi
 
     # Update Grub
@@ -216,23 +255,24 @@ function main {
     else
         echo
         echo "Failed fixing GRUB, please try fixing it manually."
-        exit 1
+        # exit 1
     fi
     
     echo -n "Updating partition data..."
     local hdd_root_part_no=`echo ${t_root} | sed 's/^[^0-9]\+\([0-9]\+\)$/\1/'`
     local write_gpt_path="${hdd_root}/usr/sbin/write_gpt.sh"
-    # Remove unnecessart partitions & update properties
+    # Remove unnecessary partitions & update properties
     cat "${write_gpt_path}" | grep -vE "_(KERN_(A|B|C)|2|4|6|ROOT_(B|C)|5|7|OEM|8|RESERVED|9|10|RWFW|11)" | sed -n \
     -e "s/^\(\s*PARTITION_NUM_ROOT_A=\)\"[0-9]\+\"$/\1\"${hdd_root_part_no}\"/g" \
     -e "s/^\(\s*PARTITION_NUM_3=\)\"[0-9]\+\"$/\1\"${hdd_root_part_no}\"/g" \
-    -e "w ${write_gpt_path}"
+     | tee "${write_gpt_path}" > /dev/null
+    # -e "w ${write_gpt_path}" # doesn't work on CrOS
     if [ $? -eq 0 ]; then
         echo "Done."
     else
         echo
         echo "Failed updating partition data, please try fixing it manually."
-        exit 1
+        # exit 1
     fi
 }
 
