@@ -89,5 +89,4 @@ function GetAppId {
   fi
 }
 
-#echo ${os_sp_}
-( set -o posix ; set )
+#( set -o posix ; set )
