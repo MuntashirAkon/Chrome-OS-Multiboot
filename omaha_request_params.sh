@@ -88,5 +88,3 @@ function GetAppId {
     echo "${board_app_id_}"
   fi
 }
-
-#( set -o posix ; set )
