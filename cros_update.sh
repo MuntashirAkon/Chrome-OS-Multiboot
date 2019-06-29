@@ -10,6 +10,9 @@ if [ $UID -ne 0 ]; then
 fi
 
 
+# import omaha_request_action.sh
+. omaha_request_action.sh
+
 # Get installed version info
 # Output: <code name> <milestone> <platform version> <cros version>
 # Example: eve 72 11316.165.0 72.0.3626.122
@@ -65,11 +68,11 @@ function get_env {
 # $3: Platform version
 # $4: Cros version
 # Output: recovery file location
-function download_update {
+function download_update_v1 {
   local code_name=`echo "$1" | awk '{ print toupper($0) }'`
   local recovery="/tmp/recovery.conf"
   
-  curl -sL "https://dl.google.com/dl/edgedl/chromeos/recovery/recovery.conf" -o "${recovery}"
+  #curl -sL "https://dl.google.com/dl/edgedl/chromeos/recovery/recovery.conf" -o "${recovery}"
 
   local ins_plarform=$3
   local rem_platform=`get_env "${recovery}" "${code_name}" 'version'`
@@ -79,14 +82,14 @@ function download_update {
   local file_url=`get_env "${recovery}" "${code_name}" 'url'`
   file_size=`bc -l <<< "scale=2; ${file_size}/1073741824"`
 
-  if [ "${ins_plarform}" = "${rem_platform}" ]; then
-    echo "No update available."
-    exit 0
+  if [ "${ins_plarform}" == "${rem_platform}" ]; then
+    >&2 echo "No update available."
+    exit 1
   else # Update available
-    echo "Update available."
-    echo "Downloading ${file_name} (${file_size} GB)..."
+    >&2 echo "Update available."
+    >&2 echo "Downloading ${file_name} (${file_size} GB)..."
     # TODO: take ${root} as input
-    local user=`logname`
+    local user=`logname 2> /dev/null`
     if [ $? -ne 0 ]; then
         user="chronos"
     fi
@@ -96,13 +99,13 @@ function download_update {
     curl -\#L -o "${file_loc_zip}" "${file_url}"
     # TODO: match checksum
     if [ $? -ne 0 ]; then
-        echo "Failed to download ${file_name}. Try again."
+        >&2 echo "Failed to download ${file_name}. Try again."
         exit 1
     fi
     unzip -d "${root}" "${file_loc_zip}"
     rm ${file_loc_zip}
     echo "${file_loc}"
-    return 0
+    exit 0
   fi
 }
 
@@ -159,7 +162,7 @@ function main {
     # Current root, /dev/sdXX
     local c_root=`mount | grep -E '\s/\s' -m 1 | awk '{print $1}'`
     # Target root, /dev/sdXX
-    local t_root=''
+    local t_root=
     if [ "${c_root}" = "${root_a_part}" ]; then
       t_root="${root_b_part}"
     else
@@ -167,17 +170,16 @@ function main {
     fi
 
     # Set root directory
-    local user=`logname`
-    if [ $? -ne 0 ]; then
-      user="chronos"
-    fi
+    local user=`logname 2> /dev/null`
+    if [ "${user}" == "" ]; then user='chronos'; fi
     local root="/home/${user}"
-
 
     # Check for update & download them
     echo "Checking for update..."
-    local installed_data=`get_installed`
+    local installed_data="$(get_installed)"
     local recovery_img=`download_update ${installed_data}`
+    ( set -o posix ; set )
+    if [ "${recovery_img}" == "" ]; then exit 1; fi
     
     local swtpm_tar="${root}/swtpm.tar"
     if [ "${tpm_fix}" == true ]; then

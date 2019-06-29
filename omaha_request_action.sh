@@ -89,22 +89,42 @@ function OmahaRequestAction {
 
 
 # We are on our own now.
-#OmahaRequestAction  # Get update response
 
-# Check for update
-grep 'event="update"' "${response}" > /dev/null
+function download_update {
+    OmahaRequestAction  # Get update response
 
-if [ $? -ne 0 ]; then
-  echo "No update is available."
-  exit 1
-fi
+    # Check for update
+    grep 'event="update"' "${response}" > /dev/null
 
-# Get required info
-channel_url=`sed 's/.*codebase="\([^"]\+\).*/\1/' "${response}" 2> /dev/null`
-file_name=`sed 's/.*run="\([^"]\+\).*/\1/' "${response}" 2> /dev/null`
-file_url="${channel_url}${file_name}"
-file_size=`sed 's/.*size="\([^"]\+\).*/\1/' "${response}" 2> /dev/null`
-file_size=`bc -l <<< "scale=2; ${file_size}/1073741824"`
-rem_platform=`sed 's/.*ChromeOSVersion="\([^"]\+\).*/\1/' "${response}" 2> /dev/null`
-
-# echo "Downloading ${file_name} (${file_size} GB)..."
+    if [ $? -ne 0 ]; then
+      >&2 echo "No update available."
+      exit 1
+    fi
+    # Update available
+    # Get required info
+    local channel_url=`sed 's/.*codebase="\([^"]\+\).*/\1/' "${response}" 2> /dev/null`
+    local file_name=`sed 's/.*run="\([^"]\+\).*/\1/' "${response}" 2> /dev/null`
+    local file_url="${channel_url}${file_name}"
+    local file_size=`sed 's/.*size="\([^"]\+\).*/\1/' "${response}" 2> /dev/null`
+    local file_size=`bc -l <<< "scale=2; ${file_size}/1073741824"`
+    #local rem_platform=`sed 's/.*ChromeOSVersion="\([^"]\+\).*/\1/' "${response}" 2> /dev/null`
+    
+    >&2 echo "Update available."
+    >&2 echo "Downloading ${file_name} (${file_size} GB)..."
+    
+    local user=`logname 2> /dev/null`
+    if [ "${user}" == "" ]; then user='chronos'; fi
+    local root="/home/${user}"
+    # local file_loc_zip="${root}/${file_name}.zip"
+    local file_loc="${root}/${file_name}"
+    curl -\#L -o "${file_loc}" "${file_url}"
+    # TODO: match checksum
+    if [ $? -ne 0 ]; then
+        >&2 echo "Failed to download ${file_name}. Try again."
+        exit 1
+    fi
+    #unzip -d "${root}" "${file_loc_zip}"
+    #rm ${file_loc_zip}
+    echo "${file_loc}"
+    exit 0
+}
