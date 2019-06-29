@@ -94,6 +94,9 @@ You can use Ubuntu Live (ie. without installing a Linux distro) to update Chrome
 
 **<span color="red">! Warning !</span>** **cros_update.sh** script is experimental, don't execute this file if you're using Chrome OS as your default OS.
 
+<details>
+  <summary>How it's done</summary>
+
 It *is* possible to update Chrome OS from the Chrome OS itself (without needing another Linux distro). But this requires 
 another partition (namely **ROOT-B**) since you cannot modify the partition you're currently in. The idea is that, if you're 
 currently booting from **ROOT-A** (current) partition, you'll install the update in the **ROOT-B** (target) partition and vice versa. To do that you'll need to mount the target partition and delete the contents of it and copy everything from the
@@ -101,6 +104,7 @@ current partition (to make the task easy). Then download the relevant recovery i
 Then edit the grub config to boot from the target partition. If another update comes in, just install it to 
 the **ROOT-A** partition using the similar process described above. This way you won't need any extra Linux distro (with a 
 cost of another root partition, of course but it is already available in regular installation).
+</details>
 
 You can use **cros_update.sh** (available in this repo) to update natively. But ***this script is not tested yet!*** So
 only try it if you know what you're doing. To use the script, you'll need to create a configuration file and save it as 
@@ -117,9 +121,21 @@ You can get UUID for a disk ID using the following command:
 /sbin/blkid -s PARTUUID -o value /dev/<disk-id>
 ```
 
-After setting that, simply run the script without any argument to start updating.
+After setting that, simply run the script without any argument to start updating. **omaha_request_action.sh** and
+**omaha_request_params.sh** are two files that *must* be in the same directory as **cros_update.sh**. (It is generally recommended
+that you should download the entire repository before running this command.)
 
-**Note:** **cros_update.sh** automatically downloads the necessary files (almost 2 GB in size, so have patience!) and can download the stable recovery updates only.
+**Note:** **cros_update.sh** automatically downloads the necessary files (almost 2 GB in size, so have patience!). By default, it
+looks for update in the default channel (you can see that by running `update_engine_client --show_channel`). If you want to switch
+to another channel just run `export CUSTOM_RELEASE_TRACK=<channel-name>` before running the script. The possible values of 
+**channel-name** are:
+
+```
+"canary-channel"
+"dev-channel"
+"beta-channel"
+"stable-channel"
+```
 
 ## Mounting internal partitions
 
