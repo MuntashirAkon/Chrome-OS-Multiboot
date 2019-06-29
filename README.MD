@@ -115,10 +115,10 @@ ROOTB='<ROOT-B UUID, lowercase>'
 EFI='<EFI-SYSTEM UUID, lowercase>'
 TPM=true/false
 ```
-You can get UUID for a disk ID using the following command:
+You can get **UUID** (Not **PARTUUID**) for a disk ID using the following command:
 
 ```bash
-/sbin/blkid -s PARTUUID -o value /dev/<disk-id>
+/sbin/blkid -s UUID -o value /dev/<disk-id>
 ```
 
 After setting that, simply run the script without any argument to start updating. **omaha_request_action.sh** and
