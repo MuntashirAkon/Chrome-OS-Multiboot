@@ -52,7 +52,7 @@ function GetAppXml {
     fi
     local install_date_in_days_str=  # installdate="%d" or nothing
     cat <<EOL
-    <app appid="$(GetAppId)" ${app_versions} ${app_channels} lang="${app_lang_}" board="${os_board_}" hardware_class="${hwid_}" delta_okay="${delta_okay_}" fw_version="${fw_version_}" ec_version="${ec_version_}" ${install_date_in_days_str}>
+    <app appid="$(OmahaRequestDeviceParams_GetAppId)" ${app_versions} ${app_channels} lang="${app_lang_}" board="${os_board_}" hardware_class="${hwid_}" delta_okay="${delta_okay_}" fw_version="${fw_version_}" ec_version="${ec_version_}" ${install_date_in_days_str}>
         ${app_body}
     </app>
 EOL
@@ -108,7 +108,7 @@ ORA_disable_payload_backoff=
 #
 # OmahaRequestAction::PerformAction
 #
-function PerformAction {
+function OmahaRequestAction_PerformAction {
     curl -sL -X POST --data "$(GetRequestXml)" "${update_url_}" -o "${response}"
     if [ $? -ne 0 ]; then
       >&2 echo "Omaha request network transfer failed."
@@ -120,7 +120,7 @@ function PerformAction {
 #
 # OmahaRequestAction::ParseStatus
 #
-function ParseStatus {
+function OmahaRequestAction_ParseStatus {
     local status=`/usr/bin/xmllint --xpath 'string(//updatecheck/@status)' "${response}"`
     if [ "${status}" == "noupdate" ]; then
       >&2 echo "No update available."
@@ -137,7 +137,7 @@ function ParseStatus {
 #
 # OmahaRequestAction::ParseUrls
 #
-function ParseUrls {
+function OmahaRequestAction_ParseUrls {
     local kUpdateUrlNodeXPath='/response/app/updatecheck/urls/url'
     /usr/bin/xmllint --xpath "${kUpdateUrlNodeXPath}" "${response}" > /dev/null 2>&1
     if [ $? -ne 0 ]; then
@@ -159,7 +159,7 @@ function ParseUrls {
 #
 # OmahaRequestAction::ParsePackage
 #
-function ParsePackage {
+function OmahaRequestAction_ParsePackage {
     local kPackageNodeXPath='/response/app/updatecheck/manifest/packages/package'
     /usr/bin/xmllint --xpath "${kPackageNodeXPath}" "${response}" > /dev/null 2>&1
     if [ $? -ne 0 ]; then
@@ -184,7 +184,7 @@ function ParsePackage {
 #
 # OmahaRequestAction::ParseParams
 #
-function ParseParams {
+function OmahaRequestAction_ParseParams {
     local kManifestNodeXPath='/response/app/updatecheck/manifest'
     local kActionNodeXPath='/response/app/updatecheck/manifest/actions/action'
     /usr/bin/xmllint --xpath "${kManifestNodeXPath}" "${response}" > /dev/null 2>&1
@@ -206,7 +206,6 @@ function ParseParams {
     local postinstall_index=0
     for (( i=1; i<=c_action; i++ )); do
       local event=`/usr/bin/xmllint --xpath "string(${kActionNodeXPath}[${i}]/@event)" "${response}" 2> /dev/null`
-      echo ${event}
       if [ "${event}" == "postinstall" ]; then
         postinstall_index=${i}
         break
@@ -222,30 +221,31 @@ function ParseParams {
       exit 1
     fi
     # TODO: Get the optional properties one by one.
+    ORA_is_delta_payload=`/usr/bin/xmllint --xpath "string(${kActionNodeXPath}[${postinstall_index}]/@${kTagIsDeltaPayload})" "${response}" 2> /dev/null`
 }
 
 
 #
 # OmahaRequestAction::ParseResponse
 #
-function ParseResponse {
+function OmahaRequestAction_ParseResponse {
     /usr/bin/xmllint --xpath '/response/app/updatecheck' "${response}" > /dev/null 2>&1
     if [ $? -ne 0 ]; then
       >&2 echo "XPath missing UpdateCheck NodeSet"
       exit 1
     fi
     # Date time and other not needed things are not included
-    ParseStatus
-    ParseUrls
-    ParsePackage
-    ParseParams
+    OmahaRequestAction_ParseStatus
+    OmahaRequestAction_ParseUrls
+    OmahaRequestAction_ParsePackage
+    OmahaRequestAction_ParseParams
 }
 
 
 #
 # utils::CalculateP2PFileId, Kept it though I may not provide any support for P2P
 #
-function CalculateP2PFileId {
+function utils_CalculateP2PFileId {
     local encoded_hash=`cat "${ORA_hash}" | base64 2> /dev/null`
     echo "cros_update_size_${ORA_size}_hash_${encoded_hash}"
 }
@@ -254,15 +254,15 @@ function CalculateP2PFileId {
 #
 # OmahaRequestAction::TransferComplete
 #
-function TransferComplete {
-    PerformAction  # Get update response, not part of the original method
+function OmahaRequestAction_TransferComplete {
+    OmahaRequestAction_PerformAction  # Get update response, not part of the original method
     /usr/bin/xmllint "${response}" > /dev/null 2>&1
     if [ $? -ne 0 ]; then
       >&2 echo "Omaha response not valid XML"
       exit 1
     fi
     # Don't need to check stupid ping values!
-    ParseResponse  # set ORA_ vars
+    OmahaRequestAction_ParseResponse  # set ORA_ vars
     ORA_update_exists=true
     # No need to check ShouldIgnoreUpdate()   
 }

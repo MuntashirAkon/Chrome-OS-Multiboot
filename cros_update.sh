@@ -10,8 +10,8 @@ if [ $UID -ne 0 ]; then
 fi
 
 
-# import omaha_request_action.sh
-. omaha_response_handler_action.sh
+# import download_action.sh
+. download_action.sh
 
 
 # Cleanup the mount point if exists
@@ -39,18 +39,17 @@ function main {
     echo "Sorry, the script is incomplete! Wait until I implement it properly."
     exit 1
     echo "Reading cros_update.conf..."
-    local conf_path="/usr/local/cros_update.conf"
     # Create cros_update.conf if not exists
-    touch "${conf_path}"
+    touch "${kCrosUpdateConf}"
 
     # cros_update.conf format:
-    # ROOTA='<ROOT-A UUID, lowercase>'
-    # ROOTB='<ROOT-B UUID, lowercase>'
-    # EFI='<EFI-SYSTEM UUID, lowercase>'
+    # ROOTA='<ROOT-A UUID>'
+    # ROOTB='<ROOT-B UUID>'
+    # EFI='<EFI-SYSTEM UUID>'
     # TPM=true/false
 
     # Read cros_update.conf
-    source "${conf_path}"
+    source "${kCrosUpdateConf}"
 
     # Validate conf
     if [ "${ROOTA}" = "" ] || [ "${ROOTB}" = "" ]; then
@@ -83,7 +82,7 @@ function main {
 
     # Check for update & download them
     echo "Checking for update..."
-    local recovery_img="$(download_update)"
+    local recovery_img="$(DownloadAction_PerformAction)"
     if [ "${recovery_img}" == "" ]; then exit 1; fi
 
     local swtpm_tar="${root}/swtpm.tar"

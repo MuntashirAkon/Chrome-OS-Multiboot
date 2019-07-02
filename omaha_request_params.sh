@@ -36,7 +36,7 @@ kChannelsByStability=(
 #
 # OmahaRequestDeviceParams::GetMachineType
 #
-function GetMachineType {
+function OmahaRequestDeviceParams_GetMachineType {
   echo `uname --machine`
 }
 
@@ -47,7 +47,7 @@ function GetMachineType {
 os_platform_=${kOsPlatform}
 os_version_=${kOsVersion}
 app_version_="${CHROMEOS_RELEASE_VERSION}"
-os_sp_="${app_version_}_$(GetMachineType)"
+os_sp_="${app_version_}_$(OmahaRequestDeviceParams_GetMachineType)"
 os_board_="${CHROMEOS_RELEASE_BOARD}"
 release_app_id="${CHROMEOS_RELEASE_APPID}"
 board_app_id_="${CHROMEOS_BOARD_APPID}"
@@ -69,9 +69,12 @@ if [ "${current_channel_}" == "${target_channel_}" ]; then
 else
   delta_okay_="false"
 fi
+delta_okay_="false"  # FIXME: No support for delta image
 update_url_="${CHROMEOS_AUSERVER}"
 if [ "${update_url_}" == "" ]; then update_url_="${kProductionOmahaUrl}"; fi
 interactive_=true
+
+
 #
 # OmahaRequestDeviceParams::UpdateDownloadChannel
 #
@@ -81,7 +84,7 @@ download_channel_="${target_channel_}"
 #
 # OmahaRequestParams::GetAppId
 #
-function GetAppId {
+function OmahaRequestDeviceParams_GetAppId {
   if [ "${download_channel_}" == "canary-channel" ]; then
     echo "${canary_app_id_}"
   else
