@@ -1,7 +1,7 @@
 #!/bin/bash
 # Copyright (c) 2019 Muntashir Al-Islam. All rights reserved.
 
-# USAGE: install_chromium.sh <chromiumos_image.img> <efi_part> <root_a_part> <state_part>
+# USAGE: install_chromium.sh <chromiumos_image.img> <efi_part> <root_a_part> <state_part> [--skip-state]
 # Example: install_chromium.sh ~/Downloads/ChromeOS/chromiumos_image.img sda4 sda5 sda6
 
 if [ $UID -ne 0 ]; then
@@ -32,10 +32,15 @@ function mountIfNotAlready {
 # $3: HDD ROOT-A partition id e.g. sda5
 # $4: HDD STATE partition id e.g. sda6
 function main {
-    if [ $# -ne 4 ]; then
+    if ! [ $# -ge 4 ]; then
         echo "Invalid argument!"
-        echo "USAGE: install_chromium.sh <chromiumos_image.img> <efi_part> <root_a_part> <state_part>"
+        echo "USAGE: install_chromium.sh <chromiumos_image.img> <efi_part> <root_a_part> <state_part> [--skip-state]"
         exit 1
+    fi
+    
+    local skip_state=0
+    if [ "$5" == "--skip-state" ]; then
+        skip_state=1
     fi
     
     local chrome_image=$1
@@ -98,21 +103,25 @@ function main {
         exit 1
     fi
 
-    echo -n "Copying STATE..."
-    # Mount partition#1 (STATE) of the image
-    mountIfNotAlready "${img_state_part}" "${state}"
-    # Mount the STATE partition of the HDD
-    mountIfNotAlready "${hdd_state_part}" "${local_state}"
-    # Delete all the contents of the local partition
-    rm -Rf "${local_state}"/*
-    # Copy files
-    cp -a "${state}"/* "${local_state}" 2> /dev/null
-    if [ $? -eq 0 ]; then
-        echo "Done."
+    if [ ${skip_state} -ne 1 ]; then
+        echo -n "Copying STATE..."
+        # Mount partition#1 (STATE) of the image
+        mountIfNotAlready "${img_state_part}" "${state}"
+        # Mount the STATE partition of the HDD
+        mountIfNotAlready "${hdd_state_part}" "${local_state}"
+        # Delete all the contents of the local partition
+        rm -Rf "${local_state}"/*
+        # Copy files
+        cp -a "${state}"/* "${local_state}" 2> /dev/null
+        if [ $? -eq 0 ]; then
+            echo "Done."
+        else
+            echo
+            echo "Failed copying files, may contain corrupted files."
+            exit 1
+        fi
     else
-        echo
-        echo "Failed copying files, may contain corrupted files."
-        exit 1
+        echo "Skipping STATE partition..."
     fi
 
     # Post installation
