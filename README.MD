@@ -30,7 +30,7 @@ My approach to multiboot Chrome OS or Chromium OS on regular machines.
   (check [here](https://www.chromium.org/chromium-os/developer-information-for-chrome-os-devices) for more info)
 6. [install_chrome.h](https://raw.githubusercontent.com/MuntashirAkon/Chrome-OS-Multiboot/master/install_chromium.sh)
 
-If you're going to install Chromium OS (not Chrome OS), you don't need 2 and 5 prerequisites.
+If you're going to install Chromium OS (not Chrome OS), you don't need 2, 3, and 5 prerequisites.
 
 ### Process
 
