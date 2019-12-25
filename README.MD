@@ -137,11 +137,11 @@ Considering the fact that we may frequently need to change the partitions in the
   ```
   Add the partition ids along with the mount points like this:
   ```
-  /dev/sda2   /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads/MyFiles/Ocean            auto    defaults   0      0
-  /dev/sda3   /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads/MyFiles/Shore            auto    defaults   0      0
-  /dev/sda6   /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads/MyFiles/WindowsOS        auto    defaults   0      0
-  /dev/sda8   /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads/MyFiles/macOSHighSierra  auto    defaults   0      0
-  /dev/sda12  /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads/MyFiles/Ubuntu           auto    defaults   0      0
+  /dev/sda2   /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/MyFiles/Downloads/Ocean            auto    defaults   0      0
+  /dev/sda3   /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/MyFiles/Downloads/Shore            auto    defaults   0      0
+  /dev/sda6   /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/MyFiles/Downloads/WindowsOS        auto    defaults   0      0
+  /dev/sda8   /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/MyFiles/Downloads/macOSHighSierra  auto    defaults   0      0
+  /dev/sda12  /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/MyFiles/Downloads/Ubuntu           auto    defaults   0      0
   ```
   Now save the file.
   
