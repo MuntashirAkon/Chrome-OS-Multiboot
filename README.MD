@@ -96,8 +96,6 @@ Move to another repo as the project appears to be more complex than I imagined. 
 
 ## Mounting internal partitions
 
-_[Except where noted, you can follow this guide entirely on Chrome OS]_
-
 As you may have noticed, internal partitions are not mounted by default (since Chrome OS is never meant to be used this way).
 So, in order to mount the internal partitions, you'll need to edit `/etc/fstab` **_after_ you have created an user account in the Chrome OS.** The idea is to mount them inside the **~/Downloads** folder so that you can access these partitions from there.
 
@@ -108,11 +106,11 @@ Considering the fact that we may frequently need to change the partitions in the
 - First, you need to determine which partition(s) should be mounted on startup. You can get the device ids using various
   methods. For instance, in Chrome OS, you can get a list of mountable partitions using the following command:
   ```bash
-  sudo /sbin/blkid -o full | grep -E "^/dev/sda.*TYPE" | grep -vE "EFI|STATE|ROOT-A"
+  sudo /sbin/blkid -o full | grep -E "^/dev/sd.*TYPE" | grep -vE "EFI|STATE|ROOT-A"
   ```
   (Here **EFI**, **STATE** and **ROOT-A** partitions are ignored)
   
-  You'll see somthing like this:
+  You'll see something like this:
   ```
   /dev/sda2: UUID="97867245-0528-320d-94c1-c166b79375d9" LABEL="Ocean" TYPE="hfsplus" PARTUUID="864b7c8d-499e-11e7-8dc3-806e6f6e6963"
   /dev/sda3: UUID="f567c6b2-df56-37c2-b9f3-412a02695d30" LABEL="Shore" TYPE="hfsplus" PARTUUID="222c8fbe-9c8c-4ccc-a2d3-148c89b375ab"
@@ -123,38 +121,43 @@ Considering the fact that we may frequently need to change the partitions in the
   /dev/sda12: UUID="f2d6d289-1c60-4d94-82f5-fa9132246a47" TYPE="ext4" PARTUUID="a61af699-38f7-47c3-bb97-10cbdf2dbedf"
   ```
   Note the device ids which are to be mounted on startup. (Suppose `sda2`, `sda3`, `sda6`, `sda8`, `sda12`)
-- Find your profile path. The quick way would be to open `chrome://version/#profile_path` on your Chrome OS.
-  Suppose the profile path is `/home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0`
-- Append `/Downloads` at the end of the profile path (namely Downloads path), i.e. `/home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads`
-  
-  **NOTE:** As of Chrome OS version 74, you may need to append `/MyFiles/Downloads` instead of just `/Downloads`, i.e `/home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/MyFiles/Downloads`. Be sure to try both of them
-- For each of the partitions that you've noted earlier, assign a directory name after the downloads path. For instance, for `sda2`, I can assign `Ocean`, thus the whole directory becomes `/home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads/Ocean`
+- Open crosh and run the following:
+  ```sh
+  echo /home/$USER/u-$CROS_USER_ID_HASH/MyFiles/Downloads
+  ```
+  Or, if you're running Chrome OS 73 or less:
+  ```sh
+  echo /home/$USER/u-$CROS_USER_ID_HASH/Downloads
+  ```
+  You'll get a path which is accessible from **Files** app. Let call it Files path. (Suppose Files path is `/home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/MyFiles/Downloads`)
+- For each of the partitions that you've noted earlier, assign a directory name after the Files path. For instance, for `sda2`, I can assign `Ocean`, thus the whole directory becomes `/home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/MyFiles/Downloads/Ocean`
 - Create `/usr/local/fstab` using vim:
   ```
   sudo vim /usr/local/fstab
   ```
   Add the partition ids along with the mount points like this:
   ```
-  /dev/sda2   /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads/Ocean            auto    defaults   0      0
-  /dev/sda3   /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads/Shore            auto    defaults   0      0
-  /dev/sda6   /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads/WindowsOS        auto    defaults   0      0
-  /dev/sda8   /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads/macOSHighSierra  auto    defaults   0      0
-  /dev/sda12  /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads/Ubuntu           auto    defaults   0      0
+  /dev/sda2   /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads/MyFiles/Ocean            auto    defaults   0      0
+  /dev/sda3   /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads/MyFiles/Shore            auto    defaults   0      0
+  /dev/sda6   /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads/MyFiles/WindowsOS        auto    defaults   0      0
+  /dev/sda8   /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads/MyFiles/macOSHighSierra  auto    defaults   0      0
+  /dev/sda12  /home/chronos/u-910450b5b86edd74333ce14f446ec9c7a44301e0/Downloads/MyFiles/Ubuntu           auto    defaults   0      0
   ```
-  Now save the file and boot into a linux distro.
+  Now save the file.
   
   (If you don't know the `fstab` format, see the third reference bellow.)
 
 #### Copying startup script
-
-On your linux distro:
 - Download this file ([mount-internals.conf](https://raw.githubusercontent.com/MuntashirAkon/Chrome-OS-Multiboot/master/mount-internals.conf)) at `~/Downloads` directory.
-- Mount **ROOT-A** partition using file manager or disks (the location should be `/media/${USER}/ROOT-A`)
-- Copy **mount-internals.conf** at `/media/${USER}/ROOT-A/etc/init/`:
+- Mount root partition for writing
+  ```sh
+  sudo mount -o rw,remount /
   ```
-  sudo cp ~/Downloads/mount-internals.conf /media/${USER}/ROOT-A/etc/init/
+- Copy **mount-internals.conf** at `/etc/init/`:
   ```
-Now, you can safely reboot. This method should work on multiple user environment as well.
+  sudo cp ~/Downloads/mount-internals.conf /etc/init/
+  ```
+Now, you can safely reboot. This method should work on multiple user environment as well. But beware that the `CROS_USER_ID_HASH` different for each user and you've to configure each of them separately in the fstab file.
 
 **NOTE:** Mounted partitions don't show up on Android, further study needed.
 
