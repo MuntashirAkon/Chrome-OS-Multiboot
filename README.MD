@@ -2,7 +2,7 @@
 
 My approach to multiboot Chrome OS or Chromium OS on regular machines.
 
-> If you're looking for updating you regular installation, nevigate [here](#want-to-update-natively).
+> If you're looking for updating your Chrome OS installation, the project is move [here](https://github.com/MuntashirAkon/chrome_os_updater).
 
 <details>
  <summary>Index</summary>
@@ -28,7 +28,7 @@ My approach to multiboot Chrome OS or Chromium OS on regular machines.
 4. @arnoldthebat's [Chromium OS Special build](https://chromium.arnoldthebat.co.uk/index.php?dir=special&order=modified&sort=desc) (R74 or later)
 5. [Eve or similar recovery file](https://cros-updates-serving.appspot.com) matching your hardware specifications
   (check [here](https://www.chromium.org/chromium-os/developer-information-for-chrome-os-devices) for more info)
-6. [install_chrome.h](https://raw.githubusercontent.com/MuntashirAkon/Chrome-OS-Multiboot/master/install_chromium.sh)
+6. [install_chromium.sh](https://raw.githubusercontent.com/MuntashirAkon/Chrome-OS-Multiboot/master/install_chromium.sh)
 
 If you're going to install Chromium OS (not Chrome OS), you don't need 2, 3, and 5 prerequisites.
 
@@ -36,10 +36,11 @@ If you're going to install Chromium OS (not Chrome OS), you don't need 2, 3, and
 
 #### Creating partitions
 
-You'll need to create 3 partitions in GPT mode:
+You'll need to create 3/4 partitions in GPT mode:
 1. **EFI-SYSTEM**: Type `FAT16` (32 MB) [assume, the device id is `sda4`]
 2. **ROOT-A**: Type `EXT2` (around 5 GB) [assume `sda5`]
-3. **STATE**: Type `EXT4` (this is where user files will be kept, so the size of the partition depends on you;
+3. **ROOT-B**: Type `EXT2` (around 5 GB) [assume `sda7`] (Optional if you don't want to update Chrome OS natively)
+4. **STATE**: Type `EXT4` (this is where user files will be kept, so the size of the partition depends on you;
    20 GB recommended) [assume `sda6`]
 
 #### Converting Chromium OS to Chrome OS
