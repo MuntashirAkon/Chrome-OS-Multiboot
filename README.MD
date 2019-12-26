@@ -38,8 +38,8 @@ If you're going to install Chromium OS (not Chrome OS), you don't need 2, 3, and
 
 You'll need to create 3/4 partitions in GPT mode:
 1. **EFI-SYSTEM**: Type `FAT16` (32 MB) [assume, the device id is `sda4`]
-2. **ROOT-A**: Type `EXT2` (around 5 GB) [assume `sda5`]
-3. **ROOT-B**: Type `EXT2` (around 5 GB) [assume `sda7`] (Optional if you don't want to update Chrome OS natively)
+2. **ROOT-A**: Type `EXT2` (at least 4 GB) [assume `sda5`]
+3. **ROOT-B**: Type `EXT2` (at least 4 GB) [assume `sda7`] (Optional if you don't want to update Chrome OS natively)
 4. **STATE**: Type `EXT4` (this is where user files will be kept, so the size of the partition depends on you;
    20 GB recommended) [assume `sda6`]
 
