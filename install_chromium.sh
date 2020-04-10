@@ -26,6 +26,13 @@ function mountIfNotAlready {
 }
 
 #
+# Get partition number from partition name
+# $1: Partition name e.g. /dev/sda2, nvme0n1p2, mmcblk1p2
+function getPartNo {
+    echo "$1" | sed -E 's|^.*((mmcblk\|nvme[0-9]+n)[0-9]+p\|sd[a-z]+)([0-9]+)$|\3|'
+}
+
+#
 # The main function
 # $1: chromiumos_image.img
 # $2: HDD EFI-SYSTEM parition id e.g. sda4
@@ -138,9 +145,9 @@ function main {
     fi
     
     echo -n "Updating partition data..."
-    local hdd_efi_part_no=`echo ${hdd_efi_part} | sed 's/^[^0-9]\+\([0-9]\+\)$/\1/'`
-    local hdd_root_a_part_no=`echo ${hdd_root_a_part} | sed 's/^[^0-9]\+\([0-9]\+\)$/\1/'`
-    local hdd_state_part_no=`echo ${hdd_state_part} | sed 's/^[^0-9]\+\([0-9]\+\)$/\1/'`
+    local hdd_efi_part_no=`getPartNo "${hdd_efi_part}"`
+    local hdd_root_a_part_no=`getPartNo "${hdd_root_a_part}"`
+    local hdd_state_part_no=`getPartNo "${hdd_state_part}"`
     local write_gpt_path="${local_root_a}/usr/sbin/write_gpt.sh"
     # Remove unnecessart partitions & update properties
     cat "${write_gpt_path}" | grep -vE "_(KERN_(A|B|C)|2|4|6|ROOT_(B|C)|5|7|OEM|8|RESERVED|9|10|RWFW|11)" | sed \
